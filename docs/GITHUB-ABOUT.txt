@@ -1,0 +1,10 @@
+星眠 Star Sleep — 为夜间 Agent 工作设置电脑休息时间。Windows 定时关机与闹钟，冷蓝科幻 UI，离线运行，仅在软件运行期间有效。
+
+Suggested topics:
+windows electron react typescript shutdown-timer alarm desktop-app ai-agent productivity
+
+Author display name:
+AsterForgeDev
+
+Short profile bio:
+Building practical, thoughtful tools with AI. Exploring learning, automation, and playful interactions.

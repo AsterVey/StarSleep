@@ -1,0 +1,61 @@
+/* Keep the full instrument and its footer visible on common scaled Windows displays. */
+.plan-row { transition: background .18s ease-out; }
+.plan-row:hover { background: #102136; }
+.plan-main { min-width: 0; }
+.plan-name h3 { max-width: none; min-width: 0; }
+.plan-name > span { flex-shrink: 0; }
+.plan-meta { display: flex; align-items: center; gap: 5px; font-size: 11px; line-height: 1.7; flex-wrap: wrap; }
+.meta-dot { width: 4px; height: 4px; flex: 0 0 4px; border-radius: 50%; background: #7d99b5; }
+.next-plan .plan-meta { color: #acdff3; }
+.next-plan .meta-dot { background: #acdff3; }
+.row-actions .icon-button { width: 34px; height: 34px; }
+.plan-clock { font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+.plan-clock > span { line-height: 1.7; }
+.about-product { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 22px; }
+.about-title { display: flex; align-items: center; gap: 12px; }
+.about-title .brand-mark { width: 40px; height: 40px; }
+.about-title h3 { font-size: 18px; font-weight: 500; margin: 0 0 4px; }
+.about-title h3 span { font-family: Rajdhani,sans-serif; font-size: 15px; color: var(--muted); margin-left: 8px; }
+.about-title p { margin: 0; font-size: 11px; color: var(--muted); }
+.author-line { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); margin: 19px 0 9px; }
+.author-bio { font-size: 12px; line-height: 1.9; color: #b4c9df; margin: 0; }
+.about-links { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
+.about-links > span { font-size: 11px; color: var(--muted); }
+.modal { scrollbar-gutter: stable; }
+.orbital { width: min(100%, 380px); }
+.workspace { height: calc(100dvh - 205px); min-height: 0; grid-template-rows: minmax(0, 1fr); }
+.orbit-panel, .plans-panel { min-height: 0; }
+.plan-list { min-height: 0; max-height: none; }
+.plan-row { padding-top: 18px; padding-bottom: 18px; }
+.plan-row.disabled { opacity: 1; }
+.plan-row.disabled .plan-type { opacity: .55; }
+.next-event > div { min-width: 0; }
+.next-event strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.next-event-icon, .next-event > button { flex-shrink: 0; }
+@media (min-width: 1400px) and (min-height: 761px) {
+  .workspace { height: calc(100dvh - 223px); }
+  .orbital { width: min(100%, 430px, calc(100dvh - 510px)); }
+}
+@media (max-height: 680px) {
+  .workspace { min-height: 480px; height: calc(100dvh - 161px); }
+  .orbital { width: min(100%, 260px); }
+  .countdown { font-size: 43px; }
+  .countdown > span:not(.colon) { min-width: 42px; }
+  .countdown .colon { font-size: 31px; }
+  .dial-units { width: 154px; }
+  .dial-icon { margin-bottom: 4px; }
+  .dial-icon svg { width: 19px; }
+  .dial-label { font-size: 10px; letter-spacing: 0; }
+  .dial-state { margin-top: 12px; font-size: 9px; }
+}
+@media (min-height: 681px) and (max-height: 760px) {
+  .workspace { height: calc(100dvh - 161px); }
+  .plan-row { padding-top: 15px; padding-bottom: 15px; }
+  .orbital { width: min(100%, 310px); }
+  .countdown { font-size: 51px; }
+  .countdown > span:not(.colon) { min-width: 49px; }
+  .countdown .colon { margin: 0 3px; }
+  .dial-units { width: 176px; }
+  .dial-icon { margin-bottom: 7px; }
+  .dial-state { margin-top: 15px; }
+}

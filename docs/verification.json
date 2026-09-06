@@ -1,0 +1,90 @@
+{
+  "date": "2026-09-06",
+  "unitTests": {
+    "passed": 22,
+    "failed": 0,
+    "reference": "npm test; see VALIDATION.md"
+  },
+  "desktopChecks": [
+    {
+      "name": "isolated preload with no Node exposed",
+      "passed": true
+    },
+    {
+      "name": "create weekly shutdown through actual editor",
+      "passed": true
+    },
+    {
+      "name": "add daily alarm and one-time shutdown",
+      "passed": true
+    },
+    {
+      "name": "filter, toggle and edit",
+      "passed": true
+    },
+    {
+      "name": "editor renders date and recurrence fields",
+      "passed": true
+    },
+    {
+      "name": "shutdown reminder demonstration is safe and cancellable",
+      "passed": true
+    },
+    {
+      "name": "settings, alarm demonstration and sound cleanup",
+      "passed": true
+    },
+    {
+      "name": "about panel, keyboard focus and fixed external links",
+      "passed": true
+    },
+    {
+      "name": "schedule rows show the actual next execution time",
+      "passed": true
+    },
+    {
+      "name": "hover ripple canvas draws and does not intercept clicks",
+      "passed": true
+    },
+    {
+      "name": "compact viewport and 150% equivalent layout have no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "minimum viewport keeps footer reachable",
+      "passed": true
+    },
+    {
+      "name": "close hides to tray; timer remains active and animation stops",
+      "passed": true
+    },
+    {
+      "name": "delete requires confirmation and removes plan",
+      "passed": true
+    },
+    {
+      "name": "hidden main-process timer reaches native adapter in safe mode",
+      "passed": true
+    },
+    {
+      "name": "no renderer exceptions",
+      "passed": true
+    },
+    {
+      "name": "explicit quit closes the application and pending warning",
+      "passed": true
+    },
+    {
+      "name": "persisted plans reload; future schedule survives application exit",
+      "passed": true
+    }
+  ],
+  "rendererErrors": [],
+  "packaged": {
+    "passed": true,
+    "version": "1.0.0",
+    "electron": "40.10.6"
+  },
+  "actualShutdownTested": false,
+  "fullInstallerLifecycle": "passed before UI refinement; not repeated against existing user installation"
+}

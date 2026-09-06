@@ -1,0 +1,108 @@
+import { randomUUID } from 'node:crypto';
+import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData } from '../src/shared';
+export const WARNING = 5 * 60_000;
+export const defaults = (): StoreData => ({ version: 1, plans: [], handled: {}, overrides: {}, logs: [], settings: { sound: true, volume: 0.5, reducedMotion: false } });
+const keyFor = (p: Plan, at: number) => `${p.id}:${p.revision}:${at}`;
+export function validate(input: PlanInput, now: number) {
+  if (!input || typeof input.name !== 'string' || !input.name.trim() || input.name.length > 48) throw new Error('请输入 1–48 个字的计划名称');
+  if (!['shutdown', 'alarm'].includes(input.kind) || !['once', 'daily', 'weekly'].includes(input.repeat)) throw new Error('计划类型无效');
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.time)) throw new Error('请选择有效的时间');
+  if (!Array.isArray(input.weekdays) || input.weekdays.some(d => !Number.isInteger(d) || d < 0 || d > 6)) throw new Error('星期设置无效');
+  if (input.repeat === 'weekly' && !input.weekdays.length) throw new Error('请至少选择一个星期');
+  if (typeof input.enabled !== 'boolean') throw new Error('启用状态无效');
+  if (input.repeat === 'once') {
+    const date = new Date(`${input.date}T${input.time}:00`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !Number.isFinite(+date) || localDate(date) !== input.date) throw new Error('请选择有效的日期');
+    if (+date <= now) throw new Error('请选择未来的日期和时间');
+  }
+}
+export function localDate(d: Date) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
+export function candidates(p: Plan, now: number): number[] {
+  if (p.repeat === 'once') return [+new Date(`${p.date}T${p.time}:00`)];
+  const [h, m] = p.time.split(':').map(Number), values: number[] = [];
+  for (let day = -1; day <= 8; day++) {
+    const date = new Date(now); date.setDate(date.getDate() + day); date.setHours(h,m,0,0);
+    if (p.repeat === 'daily' || p.weekdays.includes(date.getDay())) values.push(+date);
+  }
+  return values;
+}
+export class Scheduler {
+  warnings: Occurrence[] = [];
+  alarms: Occurrence[] = [];
+  last: number;
+  active = true;
+  private demoCounter = 0;
+  constructor(public data: StoreData, public now: () => number, private persist: () => void, private shutdown: () => void | Promise<void>, private notify: (kind: Kind) => void) { this.last = now(); }
+  log(text: string, level: 'info' | 'error' = 'info') { this.data.logs.unshift({ at: this.now(), text, level }); this.data.logs = this.data.logs.slice(0,200); }
+  private occurrence(p: Plan, at: number): Occurrence { const key = keyFor(p, at); return { key, planId:p.id, name:p.name, kind:p.kind, at:this.data.overrides[key] ?? at, originalAt:at }; }
+  private occurrences(p: Plan, now: number) {
+    const all = new Set(candidates(p,now));
+    for (const key of Object.keys(this.data.overrides)) if (key.startsWith(`${p.id}:${p.revision}:`)) all.add(Number(key.split(':').at(-1)));
+    return [...all].map(at=>this.occurrence(p,at)).filter(o=>Number.isFinite(o.at));
+  }
+  private done(o: Occurrence, outcome='已取消') { if (!o.demo) { this.data.handled[o.key]=this.now(); delete this.data.overrides[o.key]; const p=this.data.plans.find(p=>p.id===o.planId); if(p?.repeat==='once')p.outcome=outcome; } }
+  reconcile(reason = '软件重新打开') {
+    const now=this.now(); this.warnings=[]; this.alarms=[];
+    for (const p of this.data.plans.filter(p=>p.enabled)) for (const o of this.occurrences(p,now)) {
+      if (o.at < now && !this.data.handled[o.key]) { this.done(o,'已错过'); if (p.repeat==='once' || o.at >= this.last) this.log(`${p.name} · 已错过（${reason}）`); }
+    }
+    // Recurring ledgers are bounded; one-time records remain to distinguish completed from missed.
+    for (const [key, at] of Object.entries(this.data.handled)) if (at < now - 30*86400_000 && !this.data.plans.some(p=>p.repeat==='once' && key.startsWith(`${p.id}:`))) delete this.data.handled[key];
+    this.last=now; this.persist(); this.tick();
+  }
+  save(input: PlanInput, id?: string) {
+    validate(input,this.now()); const old = this.data.plans.find(p=>p.id===id);
+    if (id && !old) throw new Error('该计划已不存在，请刷新后重试');
+    const p:Plan={ name:input.name.trim(), kind:input.kind, repeat:input.repeat, date:input.date, time:input.time, weekdays:[...new Set(input.weekdays)].sort(), enabled:input.enabled, id:old?.id??randomUUID(), revision:(old?.revision??0)+1, createdAt:old?.createdAt??this.now() };
+    if (old) { this.clearPlan(old.id); this.data.plans=this.data.plans.map(x=>x.id===id?p:x); } else this.data.plans.push(p);
+    this.log(`${p.name} · ${old?'已修改':'已创建'}`); this.persist(); this.tick();
+  }
+  private clearPlan(id:string) { this.warnings=this.warnings.filter(o=>o.planId!==id); this.alarms=this.alarms.filter(o=>o.planId!==id); for (const key of Object.keys(this.data.overrides)) if (key.startsWith(id+':')) delete this.data.overrides[key]; }
+  remove(id:string) { const p=this.data.plans.find(p=>p.id===id); if (!p) throw new Error('该计划已不存在'); this.clearPlan(id); this.data.plans=this.data.plans.filter(p=>p.id!==id); this.log(`${p.name} · 已删除`); this.persist(); }
+  toggle(id:string) { const p=this.data.plans.find(p=>p.id===id); if (!p) throw new Error('该计划已不存在'); p.enabled=!p.enabled; this.clearPlan(id); if(p.enabled)for(const o of this.occurrences(p,this.now()))if(o.at<this.now()&&!this.data.handled[o.key])this.done(o,'已错过'); this.log(`${p.name} · ${p.enabled?'已启用':'已停用'}`); this.persist(); this.tick(); }
+  action(keys:string[], action:'cancel'|'snooze', minutes=10) {
+    if (!Array.isArray(keys) || !['cancel','snooze'].includes(action) || ![10,30,60].includes(minutes)) throw new Error('操作参数无效');
+    const selected=[...this.warnings,...this.alarms].filter(o=>keys.includes(o.key));
+    for (const o of selected) {
+      if (action==='snooze' && !o.demo) { delete this.data.handled[o.key]; this.data.overrides[o.key]=this.now()+minutes*60_000; this.log(`${o.name} · 本次延后 ${minutes} 分钟`); }
+      else { this.done(o); this.log(`${o.name} · ${o.demo?'演示结束':'已取消本次'}`); }
+    }
+    this.warnings=this.warnings.filter(o=>!keys.includes(o.key)); this.alarms=this.alarms.filter(o=>!keys.includes(o.key)); this.persist(); this.tick();
+  }
+  demo(kind: Kind) { const o:Occurrence={ key:`demo:${++this.demoCounter}`,planId:'demo',name:kind==='shutdown'?'关机提醒演示':'闹钟演示',kind,at:this.now()+(kind==='shutdown'?30_000:0),originalAt:this.now(),demo:true }; if(kind==='shutdown')this.warnings=[...this.warnings.filter(o=>!o.demo),o];else this.alarms=[...this.alarms.filter(o=>!o.demo),o]; this.notify(kind); }
+  stop() { this.active=false; this.warnings=[]; this.alarms=[]; }
+  tick() {
+    if (!this.active) return;
+    const now=this.now();
+    if (now < this.last - 2000 || now-this.last > 15_000) { this.reconcile('休眠或系统时间变化'); return; }
+    const due:Occurrence[]=[]; let dirty=false;
+    for(const p of this.data.plans.filter(p=>p.enabled))for(const o of this.occurrences(p,now)) {
+      if(this.data.handled[o.key])continue;
+      if(o.at < this.last-1500){this.done(o,'已错过');dirty=true;continue;}
+      if(o.at<=now) {
+        this.done(o,'已完成');dirty=true;
+        this.log(`${o.name} · ${o.kind==='shutdown'?'已到关机时间':'闹钟已触发'}`);
+        if(o.kind==='shutdown')due.push(o);else this.alarms.push(o);
+      }else if(o.kind==='shutdown' && o.at-now<=WARNING && !this.warnings.some(w=>w.key===o.key)) {this.warnings.push(o);this.notify('shutdown');}
+    }
+    if(this.alarms.some(a=>!a.demo && a.at>this.last && a.at<=now))this.notify('alarm');
+    const expiredDemos=this.warnings.filter(o=>o.demo && o.at<=now);
+    if(expiredDemos.length){this.log('演示完成 · 未执行实际关机');dirty=true;}
+    this.warnings=this.warnings.filter(o=>o.at>now);
+    this.alarms=this.alarms.filter(o=>now-o.at<60_000);
+    this.last=now;
+    if(dirty)this.persist();
+    if(due.length) {
+      const failure=(e:unknown)=>{for(const o of due){const p=this.data.plans.find(p=>p.id===o.planId);if(p?.repeat==='once')p.outcome='执行失败';}this.log(`关机失败 · ${String(e)}`,'error');this.persist();this.notify('shutdown');};
+      try { Promise.resolve(this.shutdown()).catch(failure); }
+      catch(e){failure(e);}
+    }
+  }
+  snapshot(safeMode=false):Snapshot {
+    const now=this.now();
+    return {plans:this.data.plans.map(p=>{
+      const next=p.enabled?this.occurrences(p,now).filter(o=>!this.data.handled[o.key] && o.at>=now).sort((a,b)=>a.at-b.at)[0]?.at??null:null;
+      return {...p,nextAt:next,status:!p.enabled?'已停用':next?'等待执行':p.repeat==='once'?(p.outcome??'已错过'):'等待下一次'};
+    }),warnings:this.warnings,alarms:this.alarms,logs:this.data.logs,settings:this.data.settings,now,safeMode};
+  }
+}

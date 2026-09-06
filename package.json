@@ -1,0 +1,87 @@
+{
+  "name": "star-sleep",
+  "version": "1.0.0",
+  "private": true,
+  "description": "星眠 · 为夜间 Agent 工作设置电脑休息时间",
+  "author": {
+    "name": "AsterForgeDev",
+    "url": "https://github.com/lcyb888"
+  },
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "prebuild": "node scripts/prepare-release.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/build.mjs",
+    "start": "electron .",
+    "test": "tsx --test tests/*.test.ts",
+    "package": "npm run build && electron-builder --win nsis --x64",
+    "qa": "node scripts/qa.cjs",
+    "release:prepare": "node scripts/prepare-release.mjs"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "lucide-react": "^0.468.0",
+    "@fontsource/rajdhani": "^5.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0",
+    "playwright": "^1.58.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.1.0"
+  },
+  "build": {
+    "appId": "local.starsleep.desktop",
+    "productName": "星眠",
+    "directories": {
+      "output": "release",
+      "buildResources": "resources"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "resources/icon.png",
+      "resources/icon.ico",
+      "package.json",
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.txt"
+    ],
+    "asar": true,
+    "electronDist": "node_modules/electron/dist",
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.ico",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "星眠",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "StarSleep-Setup-${version}.${ext}",
+      "runAfterFinish": false,
+      "license": "LICENSE"
+    },
+    "npmRebuild": false,
+    "copyright": "Copyright © 2026 AsterForgeDev"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lcyb888/StarSleep.git"
+  },
+  "homepage": "https://github.com/lcyb888/StarSleep#readme",
+  "bugs": {
+    "url": "https://github.com/lcyb888/StarSleep/issues"
+  }
+}
