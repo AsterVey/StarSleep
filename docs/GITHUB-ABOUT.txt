@@ -4,7 +4,7 @@ Suggested topics:
 windows electron react typescript shutdown-timer alarm desktop-app ai-agent productivity
 
 Author display name:
-AsterForgeDev
+AsterVey
 
 Short profile bio:
 Building practical, thoughtful tools with AI. Exploring learning, automation, and playful interactions.

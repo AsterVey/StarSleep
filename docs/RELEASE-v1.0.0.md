@@ -31,11 +31,11 @@
 
 ## 作者与许可
 
-第一作者：[AsterForgeDev](https://github.com/lcyb888)
+第一作者：[AsterVey](https://github.com/AsterVey)
 
 > 借助 AI，把日常问题做成实用、耐看的产品。星眠源于一个简单需求：
 > 让 Agent 夜间继续工作，也让电脑按时休息。
 
 允许个人和商业工作场景使用，禁止售卖星眠或其改版。详见仓库 LICENSE。
 
-[项目主页](https://github.com/lcyb888/StarSleep) · [反馈问题](https://github.com/lcyb888/StarSleep/issues)
+[项目主页](https://github.com/AsterVey/StarSleep) · [反馈问题](https://github.com/AsterVey/StarSleep/issues)

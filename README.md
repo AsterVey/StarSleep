@@ -9,7 +9,7 @@
 为夜间工作准备的 Windows 定时关机与闹钟工具。<br/>
 冷蓝星舰控制台、环形倒计时、指尖波纹。到点提醒，按时休息。
 
-[下载 v1.0.0](https://github.com/lcyb888/StarSleep/releases/tag/v1.0.0) · [GitHub 项目](https://github.com/lcyb888/StarSleep) · [反馈问题](https://github.com/lcyb888/StarSleep/issues) · [作者主页](https://github.com/lcyb888)
+[下载 v1.0.0](https://github.com/AsterVey/StarSleep/releases/tag/v1.0.0) · [GitHub 项目](https://github.com/AsterVey/StarSleep) · [反馈问题](https://github.com/AsterVey/StarSleep/issues) · [作者主页](https://github.com/AsterVey)
 
 Windows 10 / 11 · x64 · 中文界面 · 离线运行
 
@@ -42,7 +42,7 @@ Windows 10 / 11 · x64 · 中文界面 · 离线运行
 
 ## 三步开始
 
-1. 从 [Releases](https://github.com/lcyb888/StarSleep/releases/tag/v1.0.0) 下载 `StarSleep-Setup-1.0.0.exe`，安装后打开桌面上的「星眠」。无需另装 Node.js。
+1. 从 [Releases](https://github.com/AsterVey/StarSleep/releases/tag/v1.0.0) 下载 `StarSleep-Setup-1.0.0.exe`，安装后打开桌面上的「星眠」。无需另装 Node.js。
 2. 点击 **新建计划**，填写名称、动作、时间与重复方式，再保存。
 3. 保持星眠运行。可以先点击 **演示提醒**，体验倒计时与声音，演示不会实际关机。
 
@@ -81,7 +81,7 @@ Windows 10 / 11 · x64 · 中文界面 · 离线运行
 
 ## 作者
 
-**第一作者：[AsterForgeDev](https://github.com/lcyb888)** · 星眠的发起者与产品设计者
+**第一作者：[AsterVey](https://github.com/AsterVey)** · 星眠的发起者与产品设计者
 
 > 我喜欢借助 AI，把日常遇到的问题做成实用、耐看的产品。正在探索学习工具、自动化与游戏交互，也愿意花时间打磨每一个细节。星眠源于一个简单需求：让 Agent 夜间继续工作，也让电脑按时休息。
 
@@ -123,5 +123,5 @@ npm run package  # 构建 Windows x64 安装程序
 ---
 
 <div align="center">
-<sub>Made with care by AsterForgeDev · 今晚，到点就休息。</sub>
+<sub>Made with care by AsterVey · 今晚，到点就休息。</sub>
 </div>

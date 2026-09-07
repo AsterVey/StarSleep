@@ -75,12 +75,12 @@ async function check(name,fn){await fn();results.push({name,passed:true});consol
     await app.evaluate(({shell})=>{globalThis.starSleepOriginalOpen=shell.openExternal;globalThis.starSleepOpened=[];shell.openExternal=async url=>{globalThis.starSleepOpened.push(url);};});
     try{
       await page.getByRole('button',{name:'设置',exact:true}).click();
-      const author=page.getByRole('button',{name:'AsterForgeDev',exact:true});
+      const author=page.getByRole('button',{name:'AsterVey',exact:true});
       await author.focus();assert.equal(await author.evaluate(e=>e===document.activeElement),true);
       await author.press('Enter');
       await page.getByRole('button',{name:'GitHub 项目主页'}).click();
       const opened=await app.evaluate(()=>globalThis.starSleepOpened);
-      assert.deepEqual(opened,['https://github.com/lcyb888','https://github.com/lcyb888/StarSleep']);
+      assert.deepEqual(opened,['https://github.com/AsterVey','https://github.com/AsterVey/StarSleep']);
       assert.equal(await page.evaluate(async()=>{try{await window.starSleep.openLink('https://example.com');return false;}catch{return true;}}),true);
       await page.screenshot({path:path.join(out,'09-about.png')});
       await page.getByRole('button',{name:'关闭面板',exact:true}).click();
@@ -115,7 +115,7 @@ async function check(name,fn){await fn();results.push({name,passed:true});consol
   await check('close hides to tray; timer remains active and animation stops',async()=>{
     await page.getByRole('button',{name:'隐藏到托盘，任务继续',exact:true}).click();
     assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isVisible()),false);
-    await page.waitForFunction(()=>document.body.classList.contains('motion-off'));
+    await page.waitForFunction(()=>document.body.classList.contains('motion-off'),null,{polling:100});
     const a=await page.evaluate(async()=>(await window.starSleep.snapshot()).now);await page.waitForTimeout(1200);const b=await page.evaluate(async()=>(await window.starSleep.snapshot()).now);assert.ok(b>a);
     await page.waitForTimeout(1800);
     resourceSample=await app.evaluate(({app})=>app.getAppMetrics().map(m=>({type:m.type,cpuPercent:m.cpu.percentCPUUsage,memoryMB:Math.round(m.memory.workingSetSize/1024)})));

@@ -1,7 +1,7 @@
 export const PRODUCT = {
   name: '星眠',
   version: '1.0.0',
-  author: 'AsterForgeDev',
-  github: 'https://github.com/lcyb888/StarSleep',
-  profile: 'https://github.com/lcyb888',
+  author: 'AsterVey',
+  github: 'https://github.com/AsterVey/StarSleep',
+  profile: 'https://github.com/AsterVey',
 } as const;

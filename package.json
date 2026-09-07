@@ -4,8 +4,8 @@
   "private": true,
   "description": "星眠 · 为夜间 Agent 工作设置电脑休息时间",
   "author": {
-    "name": "AsterForgeDev",
-    "url": "https://github.com/lcyb888"
+    "name": "AsterVey",
+    "url": "https://github.com/AsterVey"
   },
   "main": "dist-electron/main.cjs",
   "scripts": {
@@ -41,7 +41,7 @@
     "appId": "local.starsleep.desktop",
     "productName": "星眠",
     "directories": {
-      "output": "release",
+      "output": "release/v1.0.0",
       "buildResources": "resources"
     },
     "files": [
@@ -73,15 +73,15 @@
       "license": "LICENSE"
     },
     "npmRebuild": false,
-    "copyright": "Copyright © 2026 AsterForgeDev"
+    "copyright": "Copyright © 2026 AsterVey"
   },
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lcyb888/StarSleep.git"
+    "url": "https://github.com/AsterVey/StarSleep.git"
   },
-  "homepage": "https://github.com/lcyb888/StarSleep#readme",
+  "homepage": "https://github.com/AsterVey/StarSleep#readme",
   "bugs": {
-    "url": "https://github.com/lcyb888/StarSleep/issues"
+    "url": "https://github.com/AsterVey/StarSleep/issues"
   }
 }
