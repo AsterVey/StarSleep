@@ -8,6 +8,8 @@
 
 ## 本次发布
 
+![v1.0.0 基础版控制台](https://raw.githubusercontent.com/AsterVey/StarSleep/v1.0.0/docs/images/console.png)
+
 - 单次、每天与每周计划，支持编辑、删除和启停。
 - 关机前 5 分钟提醒，取消本次或延后 10 / 30 / 60 分钟。
 - 独立闹钟与安全演示入口；清晰展示实际下次执行时间。

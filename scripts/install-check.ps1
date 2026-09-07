@@ -1,6 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $projectDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$installerPath = Join-Path $projectDir 'release/StarSleep-Setup-1.0.0.exe'
+$packageVersion = (Get-Content -LiteralPath (Join-Path $projectDir 'package.json') -Raw | ConvertFrom-Json).version
+$installerPath = Join-Path $projectDir "release/v$packageVersion/StarSleep-Setup-$packageVersion.exe"
 $checkDir = [System.IO.Path]::GetFullPath((Join-Path $projectDir '.install-check'))
 if (-not $checkDir.StartsWith($projectDir + [System.IO.Path]::DirectorySeparatorChar)) { throw 'Unexpected installation test path' }
 $existing = Get-ChildItem 'HKCU:/Software/Microsoft/Windows/CurrentVersion/Uninstall' | ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath } | Where-Object { $_.DisplayName -eq '星眠' }

@@ -1,6 +1,6 @@
 {
   "name": "star-sleep",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "星眠 · 为夜间 Agent 工作设置电脑休息时间",
   "author": {
@@ -41,7 +41,7 @@
     "appId": "local.starsleep.desktop",
     "productName": "星眠",
     "directories": {
-      "output": "release/v1.0.0",
+      "output": "release/v1.1.0",
       "buildResources": "resources"
     },
     "files": [

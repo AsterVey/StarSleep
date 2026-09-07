@@ -9,7 +9,7 @@
 为夜间工作准备的 Windows 定时关机与闹钟工具。<br/>
 冷蓝星舰控制台、环形倒计时、指尖波纹。到点提醒，按时休息。
 
-[下载 v1.0.0](https://github.com/AsterVey/StarSleep/releases/tag/v1.0.0) · [GitHub 项目](https://github.com/AsterVey/StarSleep) · [反馈问题](https://github.com/AsterVey/StarSleep/issues) · [作者主页](https://github.com/AsterVey)
+[下载 v1.1.0](https://github.com/AsterVey/StarSleep/releases/tag/v1.1.0) · [GitHub 项目](https://github.com/AsterVey/StarSleep) · [反馈问题](https://github.com/AsterVey/StarSleep/issues) · [作者主页](https://github.com/AsterVey)
 
 Windows 10 / 11 · x64 · 中文界面 · 离线运行
 
@@ -18,6 +18,15 @@ Windows 10 / 11 · x64 · 中文界面 · 离线运行
 ![星眠控制台：环形关机倒计时与三条示例计划](docs/images/console.png)
 
 <p align="center"><sub>真实桌面截图；计划为测试示例，运行于安全测试模式。</sub></p>
+
+## 选择你的版本
+
+| 版本 | 包含的功能 | 下载 |
+| --- | --- | --- |
+| **v1.1.0 优化版（推荐）** | 全部基础功能，加快捷计时、全局暂停、计划导入导出与界面优化 | [安装与源码](https://github.com/AsterVey/StarSleep/releases/tag/v1.1.0) |
+| v1.0.0 基础版 | 定时关机、闹钟、重复计划、提醒、托盘与本地保存 | [安装与源码](https://github.com/AsterVey/StarSleep/releases/tag/v1.0.0) |
+
+两个版本分别保留安装包与源码。升级保留计划；降级前请阅读 [升级与降级说明](docs/UPGRADE.md)。
 
 ## 今晚的工作，不必无限延长
 
@@ -40,9 +49,28 @@ Windows 10 / 11 · x64 · 中文界面 · 离线运行
 | 有一点科幻仪式感 | 冷蓝光线、鼠标波纹、短促电子音；支持减少动态效果 |
 | 安心放在本机 | 计划与记录保存在本地，离线可用，无需注册账号 |
 
+## v1.1.0：把常用操作放到手边
+
+**这次再工作一会儿。** 点工具栏「快捷计时」，选择 30 分钟、1／2／4 小时，或自定义 1–1440 分钟。选择关机或闹钟，核对预计时间后开始。它会保存准确的截止时刻，重启不会重新倒计时。
+
+**今晚临时改了主意。** 点「暂停全部」，或从托盘、实际提醒面板暂停。所有自动执行和当前响铃停止，单条计划的启用状态保留；重新打开仍暂停。主动恢复后，错过的触发点会跳过。
+
+**换电脑，也带上计划。** 在设置中导出 JSON，再选择文件导入。先看可导入、重复与过期项的数量；确认后追加，导入项全部停用。文件上限 1 MB、最多 500 条计划，不携带本机路径、执行记录或临时延后。
+
+<details>
+<summary>看看新版的快捷计时与导入预览</summary>
+
+![快捷计时](docs/images/quick.png)
+
+![全部暂停](docs/images/paused.png)
+
+![导入预览](docs/images/import.png)
+
+</details>
+
 ## 三步开始
 
-1. 从 [Releases](https://github.com/AsterVey/StarSleep/releases/tag/v1.0.0) 下载 `StarSleep-Setup-1.0.0.exe`，安装后打开桌面上的「星眠」。无需另装 Node.js。
+1. 从 [Releases](https://github.com/AsterVey/StarSleep/releases/tag/v1.1.0) 下载 `StarSleep-Setup-1.1.0.exe`，安装后打开桌面上的「星眠」。无需另装 Node.js。
 2. 点击 **新建计划**，填写名称、动作、时间与重复方式，再保存。
 3. 保持星眠运行。可以先点击 **演示提醒**，体验倒计时与声音，演示不会实际关机。
 
@@ -61,7 +89,8 @@ Windows 10 / 11 · x64 · 中文界面 · 离线运行
 
 | 当前状态 | 会发生什么 |
 | --- | --- |
-| 窗口打开或最小化 | 正常计时 |
+| 窗口打开或最小化，且未全局暂停 | 正常计时 |
+| 暂停全部计划 | 停止自动触发，重启后仍保持暂停 |
 | 点击右上角 × | 隐藏到系统托盘，继续计时 |
 | 托盘菜单选择「退出星眠 · 停止所有任务」 | 停止所有计时和提醒 |
 | 电脑进入睡眠 | 不唤醒电脑；恢复后跳过错过的触发点 |
@@ -110,11 +139,14 @@ npm start
 ```
 
 ```powershell
-npm run qa       # 安全模式下的真实桌面交互测试
+npm run qa       # 基础桌面交互回归
+node scripts/qa-v11.cjs # 新版功能、文件流程与缩放验证
 npm run package  # 构建 Windows x64 安装程序
 ```
 
 `npm run dev` 仅提供浏览器界面预览。测试用 `--safe-mode` 替换实际关机执行器，测试数据与真实计划隔离。请勿去掉安全参数执行自动化测试。
+
+本地存储版本 2 支持暂停状态和快捷计划，导入导出使用独立的计划文件格式。
 
 主进程负责调度、持久化、托盘与固定关机命令；隔离的 preload 只暴露限定接口。新增的外链入口仅允许打开预设的项目和作者地址。
 

@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData } from '../src/shared';
+import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData, QuickInput, PlanDefinition } from '../src/shared';
+import { classifyImport } from './transfer';
 export const WARNING = 5 * 60_000;
-export const defaults = (): StoreData => ({ version: 1, plans: [], handled: {}, overrides: {}, logs: [], settings: { sound: true, volume: 0.5, reducedMotion: false } });
+export const defaults = (): StoreData => ({ version: 2, paused: false, plans: [], handled: {}, overrides: {}, logs: [], settings: { sound: true, volume: 0.5, reducedMotion: false } });
 const keyFor = (p: Plan, at: number) => `${p.id}:${p.revision}:${at}`;
 export function validate(input: PlanInput, now: number) {
   if (!input || typeof input.name !== 'string' || !input.name.trim() || input.name.length > 48) throw new Error('请输入 1–48 个字的计划名称');
@@ -18,7 +19,7 @@ export function validate(input: PlanInput, now: number) {
 }
 export function localDate(d: Date) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
 export function candidates(p: Plan, now: number): number[] {
-  if (p.repeat === 'once') return [+new Date(`${p.date}T${p.time}:00`)];
+  if (p.repeat === 'once') return [p.exactAt ?? +new Date(`${p.date}T${p.time}:00`)];
   const [h, m] = p.time.split(':').map(Number), values: number[] = [];
   for (let day = -1; day <= 8; day++) {
     const date = new Date(now); date.setDate(date.getDate() + day); date.setHours(h,m,0,0);
@@ -44,20 +45,44 @@ export class Scheduler {
   reconcile(reason = '软件重新打开') {
     const now=this.now(); this.warnings=[]; this.alarms=[];
     for (const p of this.data.plans.filter(p=>p.enabled)) for (const o of this.occurrences(p,now)) {
-      if (o.at < now && !this.data.handled[o.key]) { this.done(o,'已错过'); if (p.repeat==='once' || o.at >= this.last) this.log(`${p.name} · 已错过（${reason}）`); }
+      if (o.at <= now && !this.data.handled[o.key]) { this.done(o,'已错过'); if (p.repeat==='once' || o.at >= this.last) this.log(`${p.name} · 已错过（${reason}）`); }
     }
     // Recurring ledgers are bounded; one-time records remain to distinguish completed from missed.
     for (const [key, at] of Object.entries(this.data.handled)) if (at < now - 30*86400_000 && !this.data.plans.some(p=>p.repeat==='once' && key.startsWith(`${p.id}:`))) delete this.data.handled[key];
     this.last=now; this.persist(); this.tick();
   }
-  save(input: PlanInput, id?: string) {
-    validate(input,this.now()); const old = this.data.plans.find(p=>p.id===id);
+  save(input: PlanInput, id?: string, quickAt?: number) {
+    const old = this.data.plans.find(p=>p.id===id);
+    const priorDate=old?.exactAt===undefined?old?.date:localDate(new Date(old.exactAt));
+    const priorTime=old?.exactAt===undefined?old?.time:`${String(new Date(old.exactAt).getHours()).padStart(2,'0')}:${String(new Date(old.exactAt).getMinutes()).padStart(2,'0')}`;
+    const exactAt=quickAt ?? (old?.repeat==='once' && input.repeat==='once' && priorDate===input.date && priorTime===input.time ? old.exactAt : undefined);
+    if(exactAt!==undefined && (!Number.isFinite(exactAt)||exactAt<=this.now()))throw new Error('请选择未来的日期和时间');
+    validate(input,exactAt===undefined?this.now():-Infinity);
     if (id && !old) throw new Error('该计划已不存在，请刷新后重试');
-    const p:Plan={ name:input.name.trim(), kind:input.kind, repeat:input.repeat, date:input.date, time:input.time, weekdays:[...new Set(input.weekdays)].sort(), enabled:input.enabled, id:old?.id??randomUUID(), revision:(old?.revision??0)+1, createdAt:old?.createdAt??this.now() };
+    const p:Plan={ name:input.name.trim(), kind:input.kind, repeat:input.repeat, date:input.date, time:input.time, weekdays:[...new Set(input.weekdays)].sort(), enabled:input.enabled, id:old?.id??randomUUID(), revision:(old?.revision??0)+1, createdAt:old?.createdAt??this.now(), ...(exactAt===undefined?{}:{exactAt}) };
     if (old) { this.clearPlan(old.id); this.data.plans=this.data.plans.map(x=>x.id===id?p:x); } else this.data.plans.push(p);
     this.log(`${p.name} · ${old?'已修改':'已创建'}`); this.persist(); this.tick();
   }
   private clearPlan(id:string) { this.warnings=this.warnings.filter(o=>o.planId!==id); this.alarms=this.alarms.filter(o=>o.planId!==id); for (const key of Object.keys(this.data.overrides)) if (key.startsWith(id+':')) delete this.data.overrides[key]; }
+  quick(input: QuickInput) {
+    if(!input||!['shutdown','alarm'].includes(input.kind)||!Number.isInteger(input.minutes)||input.minutes<1||input.minutes>1440)throw new Error('请输入 1–1440 的整数分钟');
+    const at=this.now()+input.minutes*60_000,d=new Date(at);
+    this.save({name:`${input.minutes} 分钟后${input.kind==='shutdown'?'关机':'提醒'}`,kind:input.kind,repeat:'once',date:localDate(d),time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,weekdays:[],enabled:true},undefined,at);
+  }
+  setPaused(paused: boolean) {
+    if(typeof paused!=='boolean')throw new Error('暂停状态无效');
+    if(!this.active)throw new Error('自动执行因故障停止，请排查后重新打开软件');
+    if(this.data.paused===paused)return;
+    this.data.paused=paused;this.warnings=[];this.alarms=[];
+    this.log(paused?'已暂停全部计划':'已恢复计划 · 跳过暂停期间错过的任务');this.persist();
+    if(!paused)this.reconcile('全部计划恢复');else this.last=this.now();
+  }
+  importPlans(definitions: PlanDefinition[]) {
+    const result=classifyImport(definitions,this.data.plans,this.now());
+    const created=result.accepted.map(p=>({...p,enabled:false,id:randomUUID(),revision:1,createdAt:this.now()}));
+    if(created.length){this.data.plans.push(...created);this.log(`已导入 ${created.length} 条计划 · 全部停用，核对后启用`);this.persist();}
+    return {imported:created.length,duplicate:result.duplicate,expired:result.expired};
+  }
   remove(id:string) { const p=this.data.plans.find(p=>p.id===id); if (!p) throw new Error('该计划已不存在'); this.clearPlan(id); this.data.plans=this.data.plans.filter(p=>p.id!==id); this.log(`${p.name} · 已删除`); this.persist(); }
   toggle(id:string) { const p=this.data.plans.find(p=>p.id===id); if (!p) throw new Error('该计划已不存在'); p.enabled=!p.enabled; this.clearPlan(id); if(p.enabled)for(const o of this.occurrences(p,this.now()))if(o.at<this.now()&&!this.data.handled[o.key])this.done(o,'已错过'); this.log(`${p.name} · ${p.enabled?'已启用':'已停用'}`); this.persist(); this.tick(); }
   action(keys:string[], action:'cancel'|'snooze', minutes=10) {
@@ -74,6 +99,12 @@ export class Scheduler {
   tick() {
     if (!this.active) return;
     const now=this.now();
+    if(this.data.paused){
+      const expired=this.warnings.some(o=>o.demo&&o.at<=now);
+      this.warnings=this.warnings.filter(o=>o.demo&&o.at>now);
+      this.alarms=this.alarms.filter(o=>o.demo&&now-o.at<60_000);
+      this.last=now;if(expired){this.log('演示完成 · 未执行实际关机');this.persist();}return;
+    }
     if (now < this.last - 2000 || now-this.last > 15_000) { this.reconcile('休眠或系统时间变化'); return; }
     const due:Occurrence[]=[]; let dirty=false;
     for(const p of this.data.plans.filter(p=>p.enabled))for(const o of this.occurrences(p,now)) {
@@ -102,7 +133,9 @@ export class Scheduler {
     const now=this.now();
     return {plans:this.data.plans.map(p=>{
       const next=p.enabled?this.occurrences(p,now).filter(o=>!this.data.handled[o.key] && o.at>=now).sort((a,b)=>a.at-b.at)[0]?.at??null:null;
-      return {...p,nextAt:next,status:!p.enabled?'已停用':next?'等待执行':p.repeat==='once'?(p.outcome??'已错过'):'等待下一次'};
-    }),warnings:this.warnings,alarms:this.alarms,logs:this.data.logs,settings:this.data.settings,now,safeMode};
+      const date=p.exactAt===undefined?p.date:localDate(new Date(p.exactAt));
+      const time=p.exactAt===undefined?p.time:`${String(new Date(p.exactAt).getHours()).padStart(2,'0')}:${String(new Date(p.exactAt).getMinutes()).padStart(2,'0')}`;
+      return {...p,date,time,nextAt:next,status:!p.enabled?'已停用':next?'等待执行':p.repeat==='once'?(p.outcome??'已错过'):'等待下一次'};
+    }),warnings:this.warnings,alarms:this.alarms,logs:this.data.logs,settings:this.data.settings,now,safeMode,paused:this.data.paused};
   }
 }

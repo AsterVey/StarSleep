@@ -86,6 +86,13 @@ components:
 
 ## Overview
 
+v1.1.0 adds quick timing and persistent pause to the toolbar. Paused state uses
+muted amber, stops the live countdown display and retains each plan's enable state.
+The app uses a flexible workspace between fixed chrome and footer. Long names wrap
+inside their row; import preview separates accepted, duplicate and expired counts.
+Grouped reminders show a bounded list and an explicit execution time, with a global
+pause action. New styles are in `src/release.css`; verified at 125% and 150% scaling.
+
 Release refinement (v1.0.0): schedule rows expose their effective next date and time;
 the nearest shutdown uses an ice-blue status dot and text. Row actions use 34px
 targets. Settings includes the version, first author, short origin story and two

@@ -2,9 +2,11 @@ import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, powerMonitor, dia
 import path from 'node:path';
 import fs from 'node:fs';
 import { execFile } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { Scheduler } from './scheduler';
 import { Storage } from './storage';
-import type { Settings } from '../src/shared';
+import type { Settings, PlanDefinition } from '../src/shared';
+import { exportTransfer, parseTransfer, classifyImport, MAX_TRANSFER_BYTES } from './transfer';
 import { PRODUCT } from '../src/product';
 const safeMode=process.argv.includes('--safe-mode');
 app.setPath('userData',path.join(app.getPath('appData'),'StarSleep'));
@@ -15,8 +17,16 @@ const gotLock=app.requestSingleInstanceLock();
 if(!gotLock)app.quit();
 let win:BrowserWindow|null=null, tray:Tray|null=null, scheduler:Scheduler, timer:NodeJS.Timeout|undefined;
 let quitting=false, storageError='', suspended=false, lastMono=performance.now(), lastWall=Date.now(), lastOffset=new Date().getTimezoneOffset();
+let pendingImport:{token:string;plans:PlanDefinition[]}|null=null;
+let trayPaused:boolean|undefined, trayError:boolean|undefined;
+function updateTray(){
+  if(!tray || (trayPaused===scheduler.data.paused&&trayError===!!storageError))return;
+  trayPaused=scheduler.data.paused;trayError=!!storageError;
+  tray.setToolTip(storageError?'星眠 · 故障，自动执行已停止':trayPaused?'星眠 · 全部计划已暂停':'星眠 · 运行中，定时任务有效');
+  tray.setContextMenu(Menu.buildFromTemplate([{label:'打开星眠',click:show},{label:trayPaused?'恢复计划':'暂停全部计划',enabled:!storageError,click:()=>{try{scheduler.setPaused(!scheduler.data.paused);send();}catch(e){dialog.showErrorBox('星眠',String(e));}}},{label:'演示关机提醒',click:()=>{scheduler.demo('shutdown');send();}},{type:'separator'},{label:'退出星眠 · 停止所有任务',click:()=>app.quit()}]));
+}
 function show(){if(win){win.setSkipTaskbar(false);win.show();if(win.isMinimized())win.restore();win.focus();}}
-function send(){if(win && !win.isDestroyed() && win.isVisible() && !win.isMinimized())win.webContents.send('state',{...scheduler.snapshot(safeMode),storageError});}
+function send(){updateTray();if(win && !win.isDestroyed() && win.isVisible() && !win.isMinimized())win.webContents.send('state',{...scheduler.snapshot(safeMode),storageError});}
 function visibility(){const visible=!!win?.isVisible()&&!win?.isMinimized();win?.webContents.send('visibility',visible);if(visible)send();}
 function iconImage(){return nativeImage.createFromPath(path.join(app.getAppPath(),'resources','icon.png'));}
 function createWindow(){
@@ -31,6 +41,30 @@ function createWindow(){
   win.loadFile(path.join(app.getAppPath(),'dist','index.html'));
 }
 function registerIpc(){
+  const ensureSender=(event:Electron.IpcMainInvokeEvent)=>{if(event.sender!==win?.webContents||event.senderFrame!==win.webContents.mainFrame)throw new Error('不允许的调用');};
+  ipcMain.handle('export-plans',async event=>{
+    ensureSender(event);const raw=exportTransfer(scheduler.data.plans);
+    const chosen=await dialog.showSaveDialog(win!,{title:'导出计划',defaultPath:'StarSleep-plans.json',filters:[{name:'星眠计划',extensions:['json']}]});
+    if(chosen.canceled||!chosen.filePath)return false;
+    const temp=chosen.filePath+'.'+randomUUID()+'.tmp';
+    try{const fd=fs.openSync(temp,'wx');try{fs.writeFileSync(fd,raw,'utf8');fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(temp,chosen.filePath);}finally{if(fs.existsSync(temp))fs.unlinkSync(temp);}
+    return true;
+  });
+  ipcMain.handle('preview-import',async event=>{
+    ensureSender(event);if(storageError)throw new Error(storageError);pendingImport=null;
+    const chosen=await dialog.showOpenDialog(win!,{title:'导入计划',properties:['openFile'],filters:[{name:'星眠计划',extensions:['json']}]});
+    if(chosen.canceled||!chosen.filePaths[0])return null;
+    const fd=fs.openSync(chosen.filePaths[0],'r');let raw:string;
+    try{if(fs.fstatSync(fd).size>MAX_TRANSFER_BYTES)throw new Error('导入文件不能超过 1 MB');const buffer=Buffer.alloc(MAX_TRANSFER_BYTES+1);const n=fs.readSync(fd,buffer,0,buffer.length,0);if(n>MAX_TRANSFER_BYTES)throw new Error('导入文件不能超过 1 MB');raw=buffer.subarray(0,n).toString('utf8');}finally{fs.closeSync(fd);}
+    const plans=parseTransfer(raw),result=classifyImport(plans,scheduler.data.plans,Date.now()),token=randomUUID();pendingImport={token,plans};
+    return {token,total:plans.length,imported:result.accepted.length,duplicate:result.duplicate,expired:result.expired,names:result.accepted.map(p=>p.name)};
+  });
+  ipcMain.handle('cancel-import',event=>{ensureSender(event);pendingImport=null;});
+  ipcMain.handle('commit-import',(event,token:unknown)=>{
+    ensureSender(event);if(storageError)throw new Error(storageError);
+    if(!pendingImport||token!==pendingImport.token)throw new Error('导入预览已失效，请重新选择文件');
+    const plans=pendingImport.plans;pendingImport=null;const result=scheduler.importPlans(plans);send();return {...result,state:{...scheduler.snapshot(safeMode),storageError}};
+  });
   ipcMain.handle('open-link',async(event,target:unknown)=>{
     if(event.sender!==win?.webContents || event.senderFrame!==win.webContents.mainFrame)throw new Error('不允许的调用');
     if(target!=='repository' && target!=='author')throw new Error('无效链接');
@@ -48,6 +82,8 @@ function registerIpc(){
   handle('act',(keys,action,minutes)=>scheduler.action(keys,action,minutes));
   handle('settings',(settings:Settings)=>{if(!settings||typeof settings.sound!=='boolean'||typeof settings.reducedMotion!=='boolean'||!Number.isFinite(settings.volume)||settings.volume<0||settings.volume>1)throw new Error('设置无效');scheduler.data.settings={sound:settings.sound,reducedMotion:settings.reducedMotion,volume:settings.volume};saveState();});
   handle('demo',kind=>{if(!['alarm','shutdown'].includes(kind))throw new Error('类型无效');scheduler.demo(kind);});
+  handle('quick',input=>scheduler.quick(input));
+  handle('pause',paused=>scheduler.setPaused(paused));
   ipcMain.on('window',(event,action)=>{if(event.sender!==win?.webContents)return;if(action==='minimize')win?.minimize();else if(action==='hide')win?.hide();else if(action==='quit')app.quit();});
 }
 let storage:Storage;
@@ -68,8 +104,7 @@ if(gotLock)app.whenReady().then(()=>{
   if(storage.recovery)scheduler.log(storage.recovery,'error');
   createWindow();registerIpc();
   tray=new Tray(iconImage().resize({width:32,height:32}));
-  tray.setToolTip('星眠 · 运行中，定时任务有效');
-  tray.setContextMenu(Menu.buildFromTemplate([{label:'打开星眠',click:show},{label:'演示关机提醒',click:()=>{scheduler.demo('shutdown');send();}},{type:'separator'},{label:'退出星眠 · 停止所有任务',click:()=>app.quit()}]));
+  updateTray();
   tray.on('double-click',show);tray.on('click',show);
   scheduler.reconcile();
   timer=setInterval(()=>{

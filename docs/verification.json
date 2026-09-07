@@ -1,7 +1,7 @@
 {
-  "date": "2026-09-07",
+  "generatedAt": "2026-09-07T00:44:52.805Z",
   "unitTests": {
-    "passed": 22,
+    "passed": 36,
     "failed": 0,
     "reference": "npm test; see VALIDATION.md"
   },
@@ -77,12 +77,53 @@
     {
       "name": "persisted plans reload; future schedule survives application exit",
       "passed": true
+    },
+    {
+      "name": "quick editor creates exact deadline and is editable",
+      "passed": true
+    },
+    {
+      "name": "pause clears reminders, persists after restart and tray callback resumes",
+      "passed": true
+    },
+    {
+      "name": "real pending shutdown reminder offers global pause",
+      "passed": true
+    },
+    {
+      "name": "native dialog import preview, confirmation, disabled plans and export",
+      "passed": true
+    },
+    {
+      "name": "long names and small window remain within layout",
+      "passed": true
+    },
+    {
+      "name": "no renderer errors in enhanced flows",
+      "passed": true
+    },
+    {
+      "name": "Windows scaling 125% layout and keyboard controls",
+      "passed": true
+    },
+    {
+      "name": "Windows scaling 150% layout and keyboard controls",
+      "passed": true
     }
   ],
   "rendererErrors": [],
+  "upgrade": {
+    "passed": true,
+    "from": "1.0.0",
+    "to": "1.1.0",
+    "planIdentityPreserved": true,
+    "originalV1BackupPreserved": true,
+    "pausePersists": true,
+    "mode": "packaged applications; isolated data; shutdown intercepted"
+  },
   "packaged": {
     "passed": true,
-    "version": "1.0.0",
+    "version": "1.1.0",
     "electron": "40.10.6"
   },
   "actualShutdownTested": false,
