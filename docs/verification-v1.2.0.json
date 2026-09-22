@@ -1,0 +1,625 @@
+{
+  "version": "1.2.0",
+  "date": "2026-09-22",
+  "localPreviewOnly": true,
+  "coreTests": {
+    "failed": 0,
+    "passed": 53
+  },
+  "desktop": {
+    "results": [
+      {
+        "name": "isolated preload and safe shutdown adapter",
+        "passed": true
+      },
+      {
+        "name": "editor inline validation, weekly creation and keyboard shortcuts",
+        "passed": true
+      },
+      {
+        "name": "dirty editor requires explicit discard and restores trigger focus",
+        "passed": true
+      },
+      {
+        "name": "quick countdown exact deadline, edit preservation and duplicate disabled",
+        "passed": true
+      },
+      {
+        "name": "search, composed filters, sort and selection reset",
+        "passed": true
+      },
+      {
+        "name": "batch disable and enable persist the selected plans",
+        "passed": true
+      },
+      {
+        "name": "skip once confirms exact date and removes only its occurrence",
+        "passed": true
+      },
+      {
+        "name": "cleanup confirmation removes only ended single plans",
+        "passed": true
+      },
+      {
+        "name": "templates prefill without creating a task",
+        "passed": true
+      },
+      {
+        "name": "settings groups and slider preview avoid per-step writes",
+        "passed": true
+      },
+      {
+        "name": "import preview explains skips; native file paths stay in main process",
+        "passed": true
+      },
+      {
+        "name": "logs search, date and filtered export",
+        "passed": true
+      },
+      {
+        "name": "demo cancellation, immutable settings deadline and global pause",
+        "passed": true
+      },
+      {
+        "name": "pause persists after restart and tray resumes plus opens quick timer",
+        "passed": true
+      },
+      {
+        "name": "alarm audio stops at fixed deadline while hidden; no full state traffic",
+        "passed": true
+      },
+      {
+        "name": "minimized alarm stops immediately when paused from tray",
+        "passed": true
+      },
+      {
+        "name": "minimum window, long names and keyboard remain reachable",
+        "passed": true
+      },
+      {
+        "name": "hidden main timer reaches shutdown adapter in safe mode",
+        "passed": true
+      },
+      {
+        "name": "explicit exit stops process and preserves plans",
+        "passed": true
+      },
+      {
+        "name": "layout and focus at 125% scale",
+        "passed": true
+      },
+      {
+        "name": "layout and focus at 150% scale",
+        "passed": true
+      },
+      {
+        "name": "layout and focus at 200% scale",
+        "passed": true
+      }
+    ],
+    "errors": [],
+    "actualShutdownTested": false
+  },
+  "performance": {
+    "results": [
+      {
+        "version": "1.1.0",
+        "count": 0,
+        "sampleMilliseconds": 3200,
+        "visible": {
+          "state": 3,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.2404742980421418,
+              "memoryKB": 109192
+            },
+            {
+              "type": "GPU",
+              "cpu": 2.3095417235168574,
+              "memoryKB": 209664
+            },
+            {
+              "type": "Utility",
+              "cpu": -0.037146166272959205,
+              "memoryKB": 50052
+            },
+            {
+              "type": "Tab",
+              "cpu": 1.7031960650186484,
+              "memoryKB": 102716
+            }
+          ]
+        },
+        "hidden": {
+          "state": 0,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.02346309285320157,
+              "memoryKB": 109264
+            },
+            {
+              "type": "GPU",
+              "cpu": 0.22427542693312175,
+              "memoryKB": 209688
+            },
+            {
+              "type": "Utility",
+              "cpu": 0.00010097514023116783,
+              "memoryKB": 50056
+            },
+            {
+              "type": "Tab",
+              "cpu": 0.19875143231399803,
+              "memoryKB": 102564
+            }
+          ]
+        },
+        "motionStopped": true,
+        "filterMilliseconds": null
+      },
+      {
+        "version": "1.1.0",
+        "count": 1,
+        "sampleMilliseconds": 3200,
+        "visible": {
+          "state": 3,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.30344664181954506,
+              "memoryKB": 109660
+            },
+            {
+              "type": "GPU",
+              "cpu": 2.9316291140917627,
+              "memoryKB": 215460
+            },
+            {
+              "type": "Utility",
+              "cpu": 0,
+              "memoryKB": 50404
+            },
+            {
+              "type": "Tab",
+              "cpu": 2.328990187395587,
+              "memoryKB": 110248
+            }
+          ]
+        },
+        "hidden": {
+          "state": 0,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.025370245119761176,
+              "memoryKB": 109772
+            },
+            {
+              "type": "GPU",
+              "cpu": 0.3287655087678162,
+              "memoryKB": 214504
+            },
+            {
+              "type": "Utility",
+              "cpu": 0.0007323505841545456,
+              "memoryKB": 50408
+            },
+            {
+              "type": "Tab",
+              "cpu": 0.33394356986192403,
+              "memoryKB": 110516
+            }
+          ]
+        },
+        "motionStopped": true,
+        "filterMilliseconds": null
+      },
+      {
+        "version": "1.1.0",
+        "count": 50,
+        "sampleMilliseconds": 3200,
+        "visible": {
+          "state": 3,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.3284826841779456,
+              "memoryKB": 109364
+            },
+            {
+              "type": "GPU",
+              "cpu": 3.151962884120823,
+              "memoryKB": 217000
+            },
+            {
+              "type": "Utility",
+              "cpu": 0.05045488411304209,
+              "memoryKB": 48804
+            },
+            {
+              "type": "Tab",
+              "cpu": 3.940304004847951,
+              "memoryKB": 138012
+            }
+          ]
+        },
+        "hidden": {
+          "state": 0,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.048913460301437915,
+              "memoryKB": 109432
+            },
+            {
+              "type": "GPU",
+              "cpu": 0.30075131001449795,
+              "memoryKB": 216020
+            },
+            {
+              "type": "Utility",
+              "cpu": 0.0001407119592176539,
+              "memoryKB": 48796
+            },
+            {
+              "type": "Tab",
+              "cpu": 0.33157005215621815,
+              "memoryKB": 138432
+            }
+          ]
+        },
+        "motionStopped": true,
+        "filterMilliseconds": null
+      },
+      {
+        "version": "1.1.0",
+        "count": 500,
+        "sampleMilliseconds": 3200,
+        "visible": {
+          "state": 3,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.17625889073997336,
+              "memoryKB": 116692
+            },
+            {
+              "type": "GPU",
+              "cpu": 1.9909305360447658,
+              "memoryKB": 208864
+            },
+            {
+              "type": "Utility",
+              "cpu": 0,
+              "memoryKB": 50908
+            },
+            {
+              "type": "Tab",
+              "cpu": 5.440728815081462,
+              "memoryKB": 250956
+            }
+          ]
+        },
+        "hidden": {
+          "state": 0,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.034291237754239395,
+              "memoryKB": 116756
+            },
+            {
+              "type": "GPU",
+              "cpu": 0.1726568662736812,
+              "memoryKB": 208028
+            },
+            {
+              "type": "Utility",
+              "cpu": 6.682362448231117E-05,
+              "memoryKB": 50912
+            },
+            {
+              "type": "Tab",
+              "cpu": 0.43759901212435226,
+              "memoryKB": 215176
+            }
+          ]
+        },
+        "motionStopped": true,
+        "filterMilliseconds": null
+      },
+      {
+        "version": "1.2.0",
+        "count": 0,
+        "sampleMilliseconds": 3200,
+        "visible": {
+          "state": 0,
+          "clock": 3,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.17497163272792673,
+              "memoryKB": 102968
+            },
+            {
+              "type": "GPU",
+              "cpu": 1.4675680192235534,
+              "memoryKB": 201796
+            },
+            {
+              "type": "Utility",
+              "cpu": 0,
+              "memoryKB": 48492
+            },
+            {
+              "type": "Tab",
+              "cpu": 1.3933894607100081,
+              "memoryKB": 116476
+            }
+          ]
+        },
+        "hidden": {
+          "state": 0,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.021481202202579604,
+              "memoryKB": 103056
+            },
+            {
+              "type": "GPU",
+              "cpu": 0.14730625364231548,
+              "memoryKB": 201796
+            },
+            {
+              "type": "Utility",
+              "cpu": 0.0032164558411489747,
+              "memoryKB": 48500
+            },
+            {
+              "type": "Tab",
+              "cpu": 0.14194542014497571,
+              "memoryKB": 116904
+            }
+          ]
+        },
+        "motionStopped": true,
+        "filterMilliseconds": null
+      },
+      {
+        "version": "1.2.0",
+        "count": 1,
+        "sampleMilliseconds": 3200,
+        "visible": {
+          "state": 0,
+          "clock": 3,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.15603786060673955,
+              "memoryKB": 106936
+            },
+            {
+              "type": "GPU",
+              "cpu": 1.7874408194430185,
+              "memoryKB": 212672
+            },
+            {
+              "type": "Utility",
+              "cpu": 0.051439886224432164,
+              "memoryKB": 48348
+            },
+            {
+              "type": "Tab",
+              "cpu": 1.6927145085803432,
+              "memoryKB": 120416
+            }
+          ]
+        },
+        "hidden": {
+          "state": 0,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.020160408481703165,
+              "memoryKB": 107088
+            },
+            {
+              "type": "GPU",
+              "cpu": 0.13900969975071256,
+              "memoryKB": 211232
+            },
+            {
+              "type": "Utility",
+              "cpu": 8.530840383943656E-05,
+              "memoryKB": 48352
+            },
+            {
+              "type": "Tab",
+              "cpu": 0.13609293443429502,
+              "memoryKB": 120516
+            }
+          ]
+        },
+        "motionStopped": true,
+        "filterMilliseconds": 580
+      },
+      {
+        "version": "1.2.0",
+        "count": 50,
+        "sampleMilliseconds": 3200,
+        "visible": {
+          "state": 0,
+          "clock": 3,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.18873503500188885,
+              "memoryKB": 107280
+            },
+            {
+              "type": "GPU",
+              "cpu": 1.794673232052024,
+              "memoryKB": 208152
+            },
+            {
+              "type": "Utility",
+              "cpu": 0.04584505837906749,
+              "memoryKB": 48244
+            },
+            {
+              "type": "Tab",
+              "cpu": 2.2906233996329046,
+              "memoryKB": 164684
+            }
+          ]
+        },
+        "hidden": {
+          "state": 0,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.021494618407486912,
+              "memoryKB": 107332
+            },
+            {
+              "type": "GPU",
+              "cpu": 0.13777374904162737,
+              "memoryKB": 202348
+            },
+            {
+              "type": "Utility",
+              "cpu": 6.225686747723033E-05,
+              "memoryKB": 48248
+            },
+            {
+              "type": "Tab",
+              "cpu": 0.1627444614369836,
+              "memoryKB": 166208
+            }
+          ]
+        },
+        "motionStopped": true,
+        "filterMilliseconds": 189
+      },
+      {
+        "version": "1.2.0",
+        "count": 500,
+        "sampleMilliseconds": 3200,
+        "visible": {
+          "state": 0,
+          "clock": 3,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.10248453312497523,
+              "memoryKB": 112752
+            },
+            {
+              "type": "GPU",
+              "cpu": 1.8134451635781101,
+              "memoryKB": 215992
+            },
+            {
+              "type": "Utility",
+              "cpu": -0.058705042977635145,
+              "memoryKB": 48488
+            },
+            {
+              "type": "Tab",
+              "cpu": 2.4281477703475454,
+              "memoryKB": 168872
+            }
+          ]
+        },
+        "hidden": {
+          "state": 0,
+          "clock": 0,
+          "sync": 0,
+          "metrics": [
+            {
+              "type": "Browser",
+              "cpu": 0.03751295657420443,
+              "memoryKB": 112116
+            },
+            {
+              "type": "GPU",
+              "cpu": 0.15074143119038963,
+              "memoryKB": 215176
+            },
+            {
+              "type": "Utility",
+              "cpu": 8.508902942502403E-05,
+              "memoryKB": 48492
+            },
+            {
+              "type": "Tab",
+              "cpu": 0.17993041898366172,
+              "memoryKB": 170532
+            }
+          ]
+        },
+        "motionStopped": true,
+        "filterMilliseconds": 194
+      }
+    ],
+    "notes": "Same machine, sequential 3.2 second samples; CPU snapshots are observations, not guarantees."
+  },
+  "upgrade": {
+    "passed": true,
+    "from": "1.1.0",
+    "to": "1.2.0",
+    "schema": 2,
+    "plansPreserved": true,
+    "pausePreserved": true,
+    "snoozePreserved": true,
+    "oldVersionReadable": true,
+    "packaged": true,
+    "safeMode": true
+  },
+  "actualShutdownTested": false,
+  "installedOrUninstalledThisVersion": false,
+  "visualFixes": {
+    "passed": true,
+    "runningAndPausedColorsDistinct": true,
+    "bodyFontMinimum13": true,
+    "safeIndicatorVisibleAtAllScales": true,
+    "minimumFirstRowActionsVisible": true,
+    "outerWorkspaceDoesNotScroll": true,
+    "actualShutdownTested": false
+  },
+  "visualReview": {
+    "scope": "Four material fixes from the independent review",
+    "disposition": "ship",
+    "remaining": 0,
+    "resolved": 4
+  }
+}

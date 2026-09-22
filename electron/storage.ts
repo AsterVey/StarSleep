@@ -18,6 +18,7 @@ export function parseStore(raw:string):StoreData {
   if(d.logs.some((l:any)=>!Number.isFinite(l.at)||typeof l.text!=='string'||!['info','error'].includes(l.level)))throw new Error('日志损坏');
   d.settings={...defaults().settings,...d.settings};
   if(typeof d.settings.sound!=='boolean'||typeof d.settings.reducedMotion!=='boolean'||!Number.isFinite(d.settings.volume)||d.settings.volume<0||d.settings.volume>1)throw new Error('设置损坏');
+  if(![1,5,10,15,30].includes(d.settings.warningMinutes)||![15,30,60].includes(d.settings.alarmSeconds))throw new Error('提醒设置损坏');
   return {...d,version:2,paused:d.version===1?false:d.paused};
 }
 export class Storage {

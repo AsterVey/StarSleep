@@ -28,10 +28,10 @@ export function exportTransfer(plans: Plan[]): string {
 }
 const signature=(p:PlanDefinition)=>JSON.stringify([p.name.trim(),p.kind,p.repeat,p.repeat==='once'?(p.exactAt??+new Date(`${p.date}T${p.time}:00`)):p.time,p.repeat==='weekly'?[...new Set(p.weekdays)].sort():[]]);
 export function classifyImport(definitions: PlanDefinition[],existing: Plan[],now:number){
-  const seen=new Set(existing.map(signature)),accepted:PlanDefinition[]=[];let duplicate=0,expired=0;
+  const seen=new Set(existing.map(signature)),accepted:PlanDefinition[]=[],skipped:{name:string;reason:string}[]=[];let duplicate=0,expired=0;
   for(const raw of definitions){const p=normalizeDefinition(raw);
-    if(p.repeat==='once'&&(p.exactAt??+new Date(`${p.date}T${p.time}:00`))<=now){expired++;continue;}
-    const key=signature(p);if(seen.has(key)){duplicate++;continue;}seen.add(key);accepted.push(p);
+    if(p.repeat==='once'&&(p.exactAt??+new Date(`${p.date}T${p.time}:00`))<=now){expired++;skipped.push({name:p.name,reason:'单次时间已过期'});continue;}
+    const key=signature(p);if(seen.has(key)){duplicate++;skipped.push({name:p.name,reason:'与现有计划或文件内条目重复'});continue;}seen.add(key);accepted.push(p);
   }
-  return {accepted,duplicate,expired};
+  return {accepted,duplicate,expired,skipped};
 }

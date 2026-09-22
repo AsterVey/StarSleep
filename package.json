@@ -1,6 +1,6 @@
 {
   "name": "star-sleep",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "星眠 · 为夜间 Agent 工作设置电脑休息时间",
   "author": {
@@ -15,7 +15,9 @@
     "start": "electron .",
     "test": "tsx --test tests/*.test.ts",
     "package": "npm run build && electron-builder --win nsis --x64",
-    "qa": "node scripts/qa.cjs",
+    "qa": "node scripts/qa-v12.cjs",
+    "qa:performance": "node scripts/qa-performance.cjs",
+    "qa:upgrade": "node scripts/qa-upgrade-v12.cjs",
     "release:prepare": "node scripts/prepare-release.mjs"
   },
   "dependencies": {
@@ -41,7 +43,7 @@
     "appId": "local.starsleep.desktop",
     "productName": "星眠",
     "directories": {
-      "output": "release/v1.1.0",
+      "output": "release/v1.2.0",
       "buildResources": "resources"
     },
     "files": [

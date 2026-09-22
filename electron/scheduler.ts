@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData, QuickInput, PlanDefinition } from '../src/shared';
+import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData, QuickInput, PlanDefinition, Settings } from '../src/shared';
 import { classifyImport } from './transfer';
 export const WARNING = 5 * 60_000;
-export const defaults = (): StoreData => ({ version: 2, paused: false, plans: [], handled: {}, overrides: {}, logs: [], settings: { sound: true, volume: 0.5, reducedMotion: false } });
+export const defaults = (): StoreData => ({ version: 2, paused: false, plans: [], handled: {}, overrides: {}, logs: [], settings: { sound: true, volume: 0.5, reducedMotion: false, warningMinutes: 5, alarmSeconds: 60 } });
 const keyFor = (p: Plan, at: number) => `${p.id}:${p.revision}:${at}`;
 export function validate(input: PlanInput, now: number) {
   if (!input || typeof input.name !== 'string' || !input.name.trim() || input.name.length > 48) throw new Error('请输入 1–48 个字的计划名称');
@@ -28,13 +28,14 @@ export function candidates(p: Plan, now: number): number[] {
   return values;
 }
 export class Scheduler {
+  revision = 0;
   warnings: Occurrence[] = [];
   alarms: Occurrence[] = [];
   last: number;
   active = true;
   private demoCounter = 0;
   constructor(public data: StoreData, public now: () => number, private persist: () => void, private shutdown: () => void | Promise<void>, private notify: (kind: Kind) => void) { this.last = now(); }
-  log(text: string, level: 'info' | 'error' = 'info') { this.data.logs.unshift({ at: this.now(), text, level }); this.data.logs = this.data.logs.slice(0,200); }
+  log(text: string, level: 'info' | 'error' = 'info') { this.revision++; this.data.logs.unshift({ at: this.now(), text, level }); this.data.logs = this.data.logs.slice(0,200); }
   private occurrence(p: Plan, at: number): Occurrence { const key = keyFor(p, at); return { key, planId:p.id, name:p.name, kind:p.kind, at:this.data.overrides[key] ?? at, originalAt:at }; }
   private occurrences(p: Plan, now: number) {
     const all = new Set(candidates(p,now));
@@ -43,6 +44,7 @@ export class Scheduler {
   }
   private done(o: Occurrence, outcome='已取消') { if (!o.demo) { this.data.handled[o.key]=this.now(); delete this.data.overrides[o.key]; const p=this.data.plans.find(p=>p.id===o.planId); if(p?.repeat==='once')p.outcome=outcome; } }
   reconcile(reason = '软件重新打开') {
+    this.revision++;
     const now=this.now(); this.warnings=[]; this.alarms=[];
     for (const p of this.data.plans.filter(p=>p.enabled)) for (const o of this.occurrences(p,now)) {
       if (o.at <= now && !this.data.handled[o.key]) { this.done(o,'已错过'); if (p.repeat==='once' || o.at >= this.last) this.log(`${p.name} · 已错过（${reason}）`); }
@@ -77,6 +79,38 @@ export class Scheduler {
     this.log(paused?'已暂停全部计划':'已恢复计划 · 跳过暂停期间错过的任务');this.persist();
     if(!paused)this.reconcile('全部计划恢复');else this.last=this.now();
   }
+  updateSettings(value: Settings) {
+    const settings = {...this.data.settings, ...value};
+    if (!value || typeof settings.sound !== 'boolean' || typeof settings.reducedMotion !== 'boolean' || !Number.isFinite(settings.volume) || settings.volume < 0 || settings.volume > 1 || ![1,5,10,15,30].includes(settings.warningMinutes ?? 5) || ![15,30,60].includes(settings.alarmSeconds ?? 60)) throw new Error('设置无效');
+    this.data.settings = {sound:settings.sound, volume:settings.volume, reducedMotion:settings.reducedMotion, warningMinutes:settings.warningMinutes ?? 5, alarmSeconds:settings.alarmSeconds ?? 60};
+    this.revision++; this.persist(); this.tick();
+  }
+  batch(ids: string[], action: 'enable'|'disable'|'delete') {
+    if (!Array.isArray(ids) || !ids.length || ids.some(id => typeof id !== 'string') || !['enable','disable','delete'].includes(action)) throw new Error('请选择有效的计划和操作');
+    const selected = [...new Set(ids)].map(id => this.data.plans.find(p => p.id === id));
+    if (selected.some(p => !p)) throw new Error('部分计划已不存在，请重新选择');
+    const now = this.now(), plans = selected as Plan[];
+    if (action === 'enable' && plans.some(p => p.repeat === 'once' && !this.occurrences(p, now).some(o => o.at > now && !this.data.handled[o.key]))) throw new Error('选择中含有已结束的单次计划，请修改时间后再启用');
+    for (const p of plans) {
+      if (action !== 'delete' && p.enabled === (action === 'enable')) continue;
+      this.clearPlan(p.id);
+      if (action !== 'delete') p.enabled = action === 'enable';
+      if (action === 'enable') for (const o of this.occurrences(p, now)) if (o.at <= now && !this.data.handled[o.key]) this.done(o, '已错过');
+    }
+    if (action === 'delete') this.data.plans = this.data.plans.filter(p => !ids.includes(p.id));
+    this.log(`已批量${action === 'enable' ? '启用' : action === 'disable' ? '停用' : '删除'} ${plans.length} 条计划`);
+    this.persist(); this.tick();
+  }
+  skip(id: string, expectedAt: number) {
+    const p = this.data.plans.find(p => p.id === id), now = this.now();
+    if (!p?.enabled || !Number.isFinite(expectedAt)) throw new Error('该计划当前没有可跳过的执行');
+    const next = this.occurrences(p, now).filter(o => !this.data.handled[o.key] && o.at > now).sort((a,b) => a.at - b.at)[0];
+    if (!next || next.at !== expectedAt) throw new Error('执行时间已变化，请刷新后重新确认');
+    this.done(next, '已跳过');
+    this.warnings = this.warnings.filter(o => o.key !== next.key);
+    this.log(`${p.name} · 已跳过 ${new Date(next.at).toLocaleString('zh-CN', {hour12:false})}`);
+    this.persist(); this.tick();
+  }
   importPlans(definitions: PlanDefinition[]) {
     const result=classifyImport(definitions,this.data.plans,this.now());
     const created=result.accepted.map(p=>({...p,enabled:false,id:randomUUID(),revision:1,createdAt:this.now()}));
@@ -94,15 +128,17 @@ export class Scheduler {
     }
     this.warnings=this.warnings.filter(o=>!keys.includes(o.key)); this.alarms=this.alarms.filter(o=>!keys.includes(o.key)); this.persist(); this.tick();
   }
-  demo(kind: Kind) { const o:Occurrence={ key:`demo:${++this.demoCounter}`,planId:'demo',name:kind==='shutdown'?'关机提醒演示':'闹钟演示',kind,at:this.now()+(kind==='shutdown'?30_000:0),originalAt:this.now(),demo:true }; if(kind==='shutdown')this.warnings=[...this.warnings.filter(o=>!o.demo),o];else this.alarms=[...this.alarms.filter(o=>!o.demo),o]; this.notify(kind); }
-  stop() { this.active=false; this.warnings=[]; this.alarms=[]; }
+  demo(kind: Kind) { const o:Occurrence={ key:`demo:${++this.demoCounter}`,planId:'demo',name:kind==='shutdown'?'关机提醒演示':'闹钟演示',kind,at:this.now()+(kind==='shutdown'?30_000:0),originalAt:this.now(),demo:true, ...(kind==='alarm'?{endsAt:this.now()+(this.data.settings.alarmSeconds ?? 60)*1000}:{}) }; if(kind==='shutdown')this.warnings=[...this.warnings.filter(o=>!o.demo),o];else this.alarms=[...this.alarms.filter(o=>!o.demo),o]; this.revision++; this.notify(kind); }
+  stop() { this.active=false; this.warnings=[]; this.alarms=[]; this.revision++; }
   tick() {
     if (!this.active) return;
     const now=this.now();
+    const before = [...this.warnings, ...this.alarms].map(o => o.key).join('|');
     if(this.data.paused){
       const expired=this.warnings.some(o=>o.demo&&o.at<=now);
       this.warnings=this.warnings.filter(o=>o.demo&&o.at>now);
-      this.alarms=this.alarms.filter(o=>o.demo&&now-o.at<60_000);
+      this.alarms=this.alarms.filter(o=>o.demo&&now<(o.endsAt ?? o.at+60_000));
+      if(before !== [...this.warnings,...this.alarms].map(o=>o.key).join('|'))this.revision++;
       this.last=now;if(expired){this.log('演示完成 · 未执行实际关机');this.persist();}return;
     }
     if (now < this.last - 2000 || now-this.last > 15_000) { this.reconcile('休眠或系统时间变化'); return; }
@@ -113,14 +149,15 @@ export class Scheduler {
       if(o.at<=now) {
         this.done(o,'已完成');dirty=true;
         this.log(`${o.name} · ${o.kind==='shutdown'?'已到关机时间':'闹钟已触发'}`);
-        if(o.kind==='shutdown')due.push(o);else this.alarms.push(o);
-      }else if(o.kind==='shutdown' && o.at-now<=WARNING && !this.warnings.some(w=>w.key===o.key)) {this.warnings.push(o);this.notify('shutdown');}
+        if(o.kind==='shutdown')due.push(o);else this.alarms.push({...o, endsAt:now+(this.data.settings.alarmSeconds ?? 60)*1000});
+      }else if(o.kind==='shutdown' && o.at-now<=(this.data.settings.warningMinutes ?? 5)*60_000 && !this.warnings.some(w=>w.key===o.key)) {this.warnings.push(o);this.notify('shutdown');}
     }
     if(this.alarms.some(a=>!a.demo && a.at>this.last && a.at<=now))this.notify('alarm');
     const expiredDemos=this.warnings.filter(o=>o.demo && o.at<=now);
     if(expiredDemos.length){this.log('演示完成 · 未执行实际关机');dirty=true;}
     this.warnings=this.warnings.filter(o=>o.at>now);
-    this.alarms=this.alarms.filter(o=>now-o.at<60_000);
+    this.alarms=this.alarms.filter(o=>now<(o.endsAt ?? o.at+60_000));
+    if(dirty || before !== [...this.warnings,...this.alarms].map(o=>o.key).join('|'))this.revision++;
     this.last=now;
     if(dirty)this.persist();
     if(due.length) {

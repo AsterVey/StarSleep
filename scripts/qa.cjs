@@ -135,7 +135,9 @@ async function check(name,fn){await fn();results.push({name,passed:true});consol
     });
     await page.getByRole('dialog',{name:'到时提醒'}).waitFor();
     await page.evaluate(()=>window.starSleep.window('hide'));
-    await page.waitForFunction(async()=>(await window.starSleep.snapshot()).logs.some(l=>l.text.includes('已拦截实际关机')),null,{polling:1000,timeout:70000});
+    const deadline=Date.now()+70000;let reached=false;
+    while(Date.now()<deadline){reached=await page.evaluate(async()=>(await window.starSleep.snapshot()).logs.some(l=>l.text.includes('已拦截实际关机')));if(reached)break;await page.waitForTimeout(1000);}
+    assert.equal(reached,true,'must await the safe shutdown executor');
     assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isVisible()),false);
     await page.evaluate(async()=>{const s=await window.starSleep.snapshot();await window.starSleep.remove(s.plans.find(p=>p.name==='安全模式计时验证').id);});
     await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].show());
