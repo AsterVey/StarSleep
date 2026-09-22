@@ -17,4 +17,7 @@ One-time, daily, selected weekdays. Shutdown warning defaults to five minutes, c
 v1.2.0 adds search, action/status filters, sorting, batch operations, disabled copies, skipping the next occurrence, ended-single-plan cleanup, four confirmation-first templates, and filtered log export. Keep storage schema 2 and plan transfer format 1. User pause and storage-fault protection remain distinct. Only clocks refresh each second; plans/logs sync on content change. Audio stops at its fixed deadline even when hidden.
 
 ## Delivery Boundary
-Windows x64 local experience build only. Do not publish v1.2.0 to GitHub yet or change v1.0.0/v1.1.0 releases. Preserve the current user installation and real data during QA. Installer EXE is for installation; source ZIP is for developers. First author AsterVey; existing No-Sale License remains.
+Windows x64 local experience build only. Do not publish v1.3.0 to GitHub yet or change v1.0.0/v1.1.0 releases. Preserve the current user installation and real data during QA. Installer EXE is for installation; source ZIP is for developers. First author AsterVey; existing No-Sale License remains.
+
+## v1.3.0 surfaces
+Reuse one window for full and 320×168 DIP mini modes; restart full, restore full for reminders, retain filters and guard open panels. Main process expands seven future local days only on changes or time boundaries. Personal templates prefill only, never execute until confirmation. Starship status uses fault > shutdown reminder > alarm > pause > run > idle. Preferences, templates and window bounds live separately in experience.json version 1. Preserve all v1.2.0 local artifacts.

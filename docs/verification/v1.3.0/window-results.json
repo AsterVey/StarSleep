@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "packaged": true,
+  "safeMode": true,
+  "results": [
+    "separate positions survive restart; restart full; alarm fallback; pin preference",
+    "simulated display metrics event clamps mini within work area",
+    "unrecoverable experience file is retained; schedules and mini continue"
+  ],
+  "physicalMonitorHotplugTested": false
+}

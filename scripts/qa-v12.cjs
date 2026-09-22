@@ -1,13 +1,13 @@
 const {_electron:electron}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const root=path.resolve(__dirname,'..'),out=path.join(root,'artifacts','v12'),data=path.join(root,'.qa-data','v12-'+Date.now());
+const root=path.resolve(__dirname,'..'),out=path.join(root,'artifacts',process.env.STARSLEEP_QA_OUTPUT||'v12'),data=path.join(root,'.qa-data','v12-'+Date.now());
 fs.mkdirSync(out,{recursive:true});fs.mkdirSync(data,{recursive:true});
 const env={...process.env,STARSLEEP_QA_DATA:data};delete env.ELECTRON_RUN_AS_NODE;
 const results=[],errors=[];let app,page;
 const plan=(name,kind='shutdown')=>({name,kind,repeat:'daily',date:'',time:'23:45',weekdays:[],enabled:true});
 const state=()=>page.evaluate(()=>window.starSleep.snapshot());
 const check=async(name,fn)=>{await fn();results.push({name,passed:true});console.log('PASS',name);};
-async function launch(scale=1){app=await electron.launch({args:[root,'--safe-mode',`--force-device-scale-factor=${scale}`],env,timeout:60000});page=await app.firstWindow();page.on('pageerror',e=>errors.push(e.message));await page.getByRole('button',{name:'新建计划',exact:true}).waitFor();await page.evaluate(async()=>{const s=await window.starSleep.snapshot();await window.starSleep.settings({...s.settings,sound:false,volume:0});});}
+async function launch(scale=1){app=await electron.launch({args:[root,'--safe-mode',`--force-device-scale-factor=${scale}`],env,timeout:60000});page=await app.firstWindow();page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));await page.getByRole('button',{name:'新建计划',exact:true}).waitFor();await page.evaluate(async()=>{const s=await window.starSleep.snapshot();await window.starSleep.settings({...s.settings,sound:false,volume:0});});}
 async function shot(name){await page.screenshot({path:path.join(out,name+'.png')});}
 async function closeModal(){await page.getByRole('button',{name:'关闭面板',exact:true}).click();}
 (async()=>{
@@ -20,7 +20,7 @@ async function closeModal(){await page.getByRole('button',{name:'关闭面板',e
   await page.keyboard.press('Control+f');assert.equal(await page.getByLabel('搜索计划').evaluate(e=>e===document.activeElement),true);
  });
  await check('dirty editor requires explicit discard and restores trigger focus',async()=>{
-  const button=page.getByRole('button',{name:'新建计划',exact:true});await button.click();await page.getByLabel('计划名称',{exact:true}).fill('未保存内容');await page.keyboard.press('Escape');await page.getByRole('dialog',{name:'放弃未保存的修改？'}).waitFor();await page.getByRole('button',{name:'继续编辑'}).click();assert.equal(await page.getByLabel('计划名称',{exact:true}).inputValue(),'未保存内容');await page.keyboard.press('Escape');await page.getByRole('button',{name:'放弃修改'}).click();await page.waitForFunction(()=>!document.querySelector('dialog[open]'));assert.equal(await button.evaluate(e=>e===document.activeElement),true);
+  const button=page.getByRole('button',{name:'新建计划',exact:true});await button.click();await page.getByLabel('计划名称',{exact:true}).fill('未保存内容');await page.keyboard.press('Escape');await page.getByRole('dialog',{name:'放弃未保存的修改？'}).waitFor();await page.getByRole('button',{name:'继续编辑'}).click();assert.equal(await page.getByLabel('计划名称',{exact:true}).inputValue(),'未保存内容');await page.keyboard.press('Escape');await page.getByRole('button',{name:'放弃修改'}).click();await page.waitForFunction(()=>!document.querySelector('dialog[open]'),null,{polling:100});assert.equal(await button.evaluate(e=>e===document.activeElement),true);
  });
  await check('quick countdown exact deadline, edit preservation and duplicate disabled',async()=>{
   await page.getByRole('button',{name:'快捷计时',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'2 小时',exact:true}).click();await shot('03-quick');await page.getByRole('button',{name:'开始计时',exact:true}).click();let s=await state();const p=s.plans.find(p=>p.name==='120 分钟后关机');assert.ok(Math.abs(p.exactAt-s.now-7200000)<3000);
@@ -78,7 +78,7 @@ async function closeModal(){await page.getByRole('button',{name:'关闭面板',e
   await page.getByRole('dialog',{name:'到时提醒'}).waitFor();const deadline=(await state()).alarms[0].endsAt;assert.ok(await page.evaluate(()=>window.audioActive)>0);
   await app.evaluate(({BrowserWindow})=>{const win=BrowserWindow.getAllWindows()[0],send=win.webContents.send.bind(win.webContents);globalThis.stateEvents=0;win.webContents.send=(channel,...args)=>{if(channel==='state')globalThis.stateEvents++;return send(channel,...args);};win.hide();});
   await page.waitForFunction(()=>window.runtimeEvents.some(r=>r.alarms.length===0),null,{polling:100,timeout:19000});assert.equal(await app.evaluate(()=>globalThis.stateEvents),0);await page.waitForFunction(()=>window.audioActive===0,null,{polling:100,timeout:3000});assert.ok(Date.now()-deadline<4000);assert.equal(await page.evaluate(()=>document.body.classList.contains('motion-off')),true);
-  await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].show());await page.waitForFunction(()=>!document.querySelector('dialog[open]'));
+  await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].show());await page.waitForFunction(()=>!document.querySelector('dialog[open]'),null,{polling:100});
  });
  await check('minimized alarm stops immediately when paused from tray',async()=>{
   await page.evaluate(()=>window.starSleep.demo('alarm'));await page.getByRole('dialog',{name:'到时提醒'}).waitFor();await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].minimize());await app.evaluate(()=>globalThis.trayItems.find(x=>x.label==='暂停全部计划').click());await page.waitForFunction(()=>window.audioActive===0,null,{polling:100,timeout:3000});assert.equal((await state()).alarms.length,0);await app.evaluate(({BrowserWindow})=>{const win=BrowserWindow.getAllWindows()[0];win.restore();win.show();});await page.evaluate(()=>window.starSleep.pause(false));

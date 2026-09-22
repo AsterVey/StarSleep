@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData, QuickInput, PlanDefinition, Settings } from '../src/shared';
+import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData, QuickInput, PlanDefinition, Settings, Agenda } from '../src/shared';
 import { classifyImport } from './transfer';
 export const WARNING = 5 * 60_000;
 export const defaults = (): StoreData => ({ version: 2, paused: false, plans: [], handled: {}, overrides: {}, logs: [], settings: { sound: true, volume: 0.5, reducedMotion: false, warningMinutes: 5, alarmSeconds: 60 } });
@@ -42,6 +42,13 @@ export class Scheduler {
     for (const key of Object.keys(this.data.overrides)) if (key.startsWith(`${p.id}:${p.revision}:`)) all.add(Number(key.split(':').at(-1)));
     return [...all].map(at=>this.occurrence(p,at)).filter(o=>Number.isFinite(o.at));
   }
+  agenda():Agenda {
+    const now=this.now(),days=Array.from({length:7},(_,i)=>{const d=new Date(now);d.setDate(d.getDate()+i);return {date:localDate(d),occurrences:[] as Occurrence[]};});
+    const byDate=new Map(days.map(d=>[d.date,d]));
+    for(const p of this.data.plans)if(p.enabled)for(const o of this.occurrences(p,now))if(o.at>now&&!this.data.handled[o.key])byDate.get(localDate(new Date(o.at)))?.occurrences.push(o);
+    for(const d of days)d.occurrences.sort((a,b)=>a.at-b.at||a.name.localeCompare(b.name,'zh-CN')||a.key.localeCompare(b.key));
+    return {days,generatedAt:now};
+  }
   private done(o: Occurrence, outcome='已取消') { if (!o.demo) { this.data.handled[o.key]=this.now(); delete this.data.overrides[o.key]; const p=this.data.plans.find(p=>p.id===o.planId); if(p?.repeat==='once')p.outcome=outcome; } }
   reconcile(reason = '软件重新打开') {
     this.revision++;
@@ -67,9 +74,10 @@ export class Scheduler {
   }
   private clearPlan(id:string) { this.warnings=this.warnings.filter(o=>o.planId!==id); this.alarms=this.alarms.filter(o=>o.planId!==id); for (const key of Object.keys(this.data.overrides)) if (key.startsWith(id+':')) delete this.data.overrides[key]; }
   quick(input: QuickInput) {
+    if(input?.name!==undefined&&(typeof input.name!=='string'||!input.name.trim()||input.name.length>48))throw new Error('计划名称需为 1–48 个字');
     if(!input||!['shutdown','alarm'].includes(input.kind)||!Number.isInteger(input.minutes)||input.minutes<1||input.minutes>1440)throw new Error('请输入 1–1440 的整数分钟');
     const at=this.now()+input.minutes*60_000,d=new Date(at);
-    this.save({name:`${input.minutes} 分钟后${input.kind==='shutdown'?'关机':'提醒'}`,kind:input.kind,repeat:'once',date:localDate(d),time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,weekdays:[],enabled:true},undefined,at);
+    this.save({name:input.name?.trim()??`${input.minutes} 分钟后${input.kind==='shutdown'?'关机':'提醒'}`,kind:input.kind,repeat:'once',date:localDate(d),time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,weekdays:[],enabled:true},undefined,at);
   }
   setPaused(paused: boolean) {
     if(typeof paused!=='boolean')throw new Error('暂停状态无效');

@@ -1,6 +1,17 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { Api } from '../src/shared';
 const api:Api={
+  experience:()=>ipcRenderer.invoke('experience'),
+  savePreset:(value,id)=>ipcRenderer.invoke('preset-save',value,id),
+  removePreset:id=>ipcRenderer.invoke('preset-remove',id),
+  experiencePrefs:value=>ipcRenderer.invoke('experience-prefs',value),
+  setMode:mode=>ipcRenderer.invoke('window-mode',mode),
+  panelOpen:open=>ipcRenderer.send('panel-open',open),
+  experienceChanged:callback=>{const fn=(_:unknown,value:any)=>callback(value);ipcRenderer.on('experience',fn);return()=>ipcRenderer.removeListener('experience',fn);},
+  miniRequest:callback=>{const fn=()=>callback();ipcRenderer.on('open-mini',fn);return()=>ipcRenderer.removeListener('open-mini',fn);},
+  agenda:()=>ipcRenderer.invoke('agenda'),
+  agendaWatch:watch=>ipcRenderer.send('agenda-watch',watch),
+  agendaChanged:callback=>{const fn=(_:unknown,value:any)=>callback(value);ipcRenderer.on('agenda',fn);return()=>ipcRenderer.removeListener('agenda',fn);},
   snapshot:()=>ipcRenderer.invoke('snapshot'),
   save:(input,id)=>ipcRenderer.invoke('save',input,id),
   remove:id=>ipcRenderer.invoke('remove',id),

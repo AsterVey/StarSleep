@@ -1,0 +1,62 @@
+{
+  "results": [
+    {
+      "name": "template save preserves unsaved editor and creates no plan",
+      "passed": true
+    },
+    {
+      "name": "template apply requires confirmation; edit and delete never change existing plan",
+      "passed": true
+    },
+    {
+      "name": "quick template retains name and duration, starts only at confirmation",
+      "passed": true
+    },
+    {
+      "name": "seven day counts, item editor, skip update and paused labels",
+      "passed": true
+    },
+    {
+      "name": "mini reuses one window and renderer, retains filter, clears selection, supports pin and pause",
+      "passed": true
+    },
+    {
+      "name": "reminders restore full mode and do not create duplicate audio controllers",
+      "passed": true
+    },
+    {
+      "name": "signal keyboard feedback has cooldown and no plan mutation; reduced motion and preference persist",
+      "passed": true
+    },
+    {
+      "name": "tray mode request respects editor protection and hide keeps app alive",
+      "passed": true
+    },
+    {
+      "name": "minimum full layout and mini have no overflow",
+      "passed": true
+    },
+    {
+      "name": "experience fault cannot stop valid schedules",
+      "passed": true
+    },
+    {
+      "name": "restart defaults full and keeps templates and preferences",
+      "passed": true
+    },
+    {
+      "name": "full and mini at 125%",
+      "passed": true
+    },
+    {
+      "name": "full and mini at 150%",
+      "passed": true
+    },
+    {
+      "name": "full and mini at 200%",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "actualShutdownTested": false
+}

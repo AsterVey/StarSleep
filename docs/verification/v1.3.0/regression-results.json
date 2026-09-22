@@ -1,0 +1,94 @@
+{
+  "results": [
+    {
+      "name": "isolated preload and safe shutdown adapter",
+      "passed": true
+    },
+    {
+      "name": "editor inline validation, weekly creation and keyboard shortcuts",
+      "passed": true
+    },
+    {
+      "name": "dirty editor requires explicit discard and restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "quick countdown exact deadline, edit preservation and duplicate disabled",
+      "passed": true
+    },
+    {
+      "name": "search, composed filters, sort and selection reset",
+      "passed": true
+    },
+    {
+      "name": "batch disable and enable persist the selected plans",
+      "passed": true
+    },
+    {
+      "name": "skip once confirms exact date and removes only its occurrence",
+      "passed": true
+    },
+    {
+      "name": "cleanup confirmation removes only ended single plans",
+      "passed": true
+    },
+    {
+      "name": "templates prefill without creating a task",
+      "passed": true
+    },
+    {
+      "name": "settings groups and slider preview avoid per-step writes",
+      "passed": true
+    },
+    {
+      "name": "import preview explains skips; native file paths stay in main process",
+      "passed": true
+    },
+    {
+      "name": "logs search, date and filtered export",
+      "passed": true
+    },
+    {
+      "name": "demo cancellation, immutable settings deadline and global pause",
+      "passed": true
+    },
+    {
+      "name": "pause persists after restart and tray resumes plus opens quick timer",
+      "passed": true
+    },
+    {
+      "name": "alarm audio stops at fixed deadline while hidden; no full state traffic",
+      "passed": true
+    },
+    {
+      "name": "minimized alarm stops immediately when paused from tray",
+      "passed": true
+    },
+    {
+      "name": "minimum window, long names and keyboard remain reachable",
+      "passed": true
+    },
+    {
+      "name": "hidden main timer reaches shutdown adapter in safe mode",
+      "passed": true
+    },
+    {
+      "name": "explicit exit stops process and preserves plans",
+      "passed": true
+    },
+    {
+      "name": "layout and focus at 125% scale",
+      "passed": true
+    },
+    {
+      "name": "layout and focus at 150% scale",
+      "passed": true
+    },
+    {
+      "name": "layout and focus at 200% scale",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "actualShutdownTested": false
+}

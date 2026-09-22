@@ -3,12 +3,14 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { Scheduler } from './scheduler';
+import { Scheduler, localDate } from './scheduler';
 import { Storage } from './storage';
 import type { Settings, PlanDefinition } from '../src/shared';
 import { exportTransfer, parseTransfer, classifyImport, MAX_TRANSFER_BYTES } from './transfer';
 import { PRODUCT } from '../src/product';
 import { exportLogText } from './logs';
+import {ExperienceStore} from './experience';
+import {WindowModes} from './window-mode';
 const safeMode=process.argv.includes('--safe-mode');
 app.setPath('userData',path.join(app.getPath('appData'),'StarSleep'));
 const qaData=process.env.STARSLEEP_QA_DATA;
@@ -20,6 +22,17 @@ let win:BrowserWindow|null=null, tray:Tray|null=null, scheduler:Scheduler, timer
 let quitting=false, storageError='', suspended=false, lastMono=performance.now(), lastWall=Date.now(), lastOffset=new Date().getTimezoneOffset();
 let pendingImport:{token:string;plans:PlanDefinition[]}|null=null;
 let traySignature='', sentRevision=-1, sentError='', runtimeSignature='';
+let experience:ExperienceStore,modes:WindowModes|undefined,experienceSignature='';
+let watchingAgenda=false,agendaRevision=-1,agendaDate='',agendaOffset=0,agendaBoundary=0;
+function sendExperience(){if(!win||win.isDestroyed()||!experience)return;const value=experience.snapshot(modes?.mode??'full'),signature=JSON.stringify(value);if(signature!==experienceSignature){experienceSignature=signature;win.webContents.send('experience',value);}}
+function sendAgenda(force=false){
+  if(!watchingAgenda||!win?.isVisible()||win.isMinimized()||modes?.mode==='mini')return;
+  const now=Date.now(),date=localDate(new Date(now)),offset=new Date(now).getTimezoneOffset();
+  if(!force&&agendaRevision===scheduler.revision&&agendaDate===date&&agendaOffset===offset&&now<agendaBoundary)return;
+  const value=scheduler.agenda(),midnight=new Date(now);midnight.setDate(midnight.getDate()+1);midnight.setHours(0,0,0,0);
+  agendaRevision=scheduler.revision;agendaDate=date;agendaOffset=offset;agendaBoundary=Math.min(+midnight,...value.days.flatMap(d=>d.occurrences.map(o=>o.at)));
+  win.webContents.send('agenda',value);
+}
 function updateTray(){
   if(!tray)return;
   const trayPaused=scheduler.data.paused;
@@ -27,11 +40,11 @@ function updateTray(){
   if(traySignature===signature)return;traySignature=signature;
   const next=scheduler.snapshot().plans.filter(p=>p.kind==='shutdown'&&p.nextAt!==null).sort((a,b)=>a.nextAt!-b.nextAt!)[0];
   tray.setToolTip(storageError?'星眠 · 故障，自动执行已停止':trayPaused?'星眠 · 全部计划已暂停':'星眠 · 运行中，定时任务有效');
-  tray.setContextMenu(Menu.buildFromTemplate([{label:'打开星眠',click:show},{label:next?`${trayPaused?'暂停中 · 原定':'下次关机'} ${new Date(next.nextAt!).toLocaleString('zh-CN',{hour12:false})}`:'尚未安排关机',enabled:false},{label:'快捷计时',enabled:!storageError,click:()=>{show();win?.webContents.send('open-quick');}},{label:trayPaused?'恢复计划':'暂停全部计划',enabled:!storageError,click:()=>{try{scheduler.setPaused(!scheduler.data.paused);send();}catch(e){dialog.showErrorBox('星眠',String(e));}}},{label:'演示关机提醒',click:()=>{scheduler.demo('shutdown');send();}},{type:'separator'},{label:'退出星眠 · 停止所有任务',click:()=>app.quit()}]));
+  tray.setContextMenu(Menu.buildFromTemplate([{label:'打开星眠',click:show},{label:'迷你模式',click:()=>{if(modes?.mode==='mini'){win?.show();win?.focus();}else{show();win?.webContents.send('open-mini');}}},{label:next?`${trayPaused?'暂停中 · 原定':'下次关机'} ${new Date(next.nextAt!).toLocaleString('zh-CN',{hour12:false})}`:'尚未安排关机',enabled:false},{label:'快捷计时',enabled:!storageError,click:()=>{show();win?.webContents.send('open-quick');}},{label:trayPaused?'恢复计划':'暂停全部计划',enabled:!storageError,click:()=>{try{scheduler.setPaused(!scheduler.data.paused);send();}catch(e){dialog.showErrorBox('星眠',String(e));}}},{label:'演示关机提醒',click:()=>{scheduler.demo('shutdown');send();}},{type:'separator'},{label:'退出星眠 · 停止所有任务',click:()=>app.quit()}]));
 }
-function show(){if(win){win.setSkipTaskbar(false);win.show();if(win.isMinimized())win.restore();win.focus();}}
+function show(){if(win){modes?.set('full');win.setSkipTaskbar(false);win.show();if(win.isMinimized())win.restore();win.focus();}}
 function send(force=false){
-  updateTray();if(!win || win.isDestroyed())return;
+  updateTray();if(!win || win.isDestroyed())return;sendExperience();sendAgenda(force);
   const runtime={warnings:scheduler.warnings,alarms:scheduler.alarms,settings:scheduler.data.settings,paused:scheduler.data.paused,storageError};
   const signature=JSON.stringify(runtime);
   if(signature!==runtimeSignature || force){runtimeSignature=signature;win.webContents.send('runtime',{...runtime,now:Date.now()});}
@@ -44,6 +57,7 @@ function visibility(){const visible=!!win?.isVisible()&&!win?.isMinimized();win?
 function iconImage(){return nativeImage.createFromPath(path.join(app.getAppPath(),'resources','icon.png'));}
 function createWindow(){
   win=new BrowserWindow({width:1240,height:820,minWidth:900,minHeight:650,show:false,frame:false,backgroundColor:'#060d18',title:'星眠',icon:iconImage(),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:true}});
+  modes=new WindowModes(win,experience,()=>{sendExperience();sendAgenda(true);},()=>scheduler.warnings.length>0||scheduler.alarms.length>0);
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   win.webContents.on('will-navigate',event=>event.preventDefault());
   win.webContents.session.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));
@@ -55,6 +69,16 @@ function createWindow(){
 }
 function registerIpc(){
   const ensureSender=(event:Electron.IpcMainInvokeEvent)=>{if(event.sender!==win?.webContents||event.senderFrame!==win.webContents.mainFrame)throw new Error('不允许的调用');};
+  ipcMain.handle('experience',event=>{ensureSender(event);return experience.snapshot(modes!.mode);});
+  for(const [channel,action] of Object.entries({
+    'preset-save':(value:any,id?:string)=>experience.preset(value,id),
+    'preset-remove':(id:string)=>experience.remove(id),
+    'experience-prefs':(value:any)=>{experience.prefs(value);modes?.pin();},
+    'window-mode':(mode:any)=>modes!.set(mode)
+  }))ipcMain.handle(channel,(event,...args)=>{ensureSender(event);try{(action as (...args:any[])=>void)(...args);return experience.snapshot(modes!.mode);}finally{sendExperience();}});
+  ipcMain.on('panel-open',(event,open)=>{if(event.sender===win?.webContents&&event.senderFrame===win.webContents.mainFrame&&typeof open==='boolean')modes!.blocked=open;});
+  ipcMain.handle('agenda',event=>{ensureSender(event);return scheduler.agenda();});
+  ipcMain.on('agenda-watch',(event,value)=>{if(event.sender!==win?.webContents||event.senderFrame!==win.webContents.mainFrame||typeof value!=='boolean')return;watchingAgenda=value;if(value)sendAgenda(true);});
   ipcMain.handle('export-logs',async(event,filter)=>{
     ensureSender(event);const raw=exportLogText(scheduler.data.logs,filter);
     const chosen=await dialog.showSaveDialog(win!,{title:'导出当前执行记录',defaultPath:'StarSleep-records.txt',filters:[{name:'文本记录',extensions:['txt']}]});
@@ -115,6 +139,7 @@ app.on('second-instance',show);
 if(gotLock)app.whenReady().then(()=>{
   app.setAppUserModelId('local.starsleep.desktop');
   storage=new Storage(app.getPath('userData'));
+  experience=new ExperienceStore(app.getPath('userData'));
   let data;
   try{data=storage.load();}catch(e){dialog.showErrorBox('星眠 · 无法读取计划',String(e));app.quit();return;}
   scheduler=new Scheduler(data,Date.now,saveState,()=>new Promise<void>((resolve,reject)=>{
@@ -140,5 +165,5 @@ if(gotLock)app.whenReady().then(()=>{
   powerMonitor.on('suspend',()=>{suspended=true;});
   powerMonitor.on('resume',()=>{suspended=false;lastWall=Date.now();lastMono=performance.now();try{scheduler.reconcile('电脑从睡眠恢复');send();}catch(e){scheduler.stop();storageError=String(e);show();send();}});
 });
-app.on('before-quit',()=>{quitting=true;if(timer)clearInterval(timer);scheduler?.stop();tray?.destroy();tray=null;});
+app.on('before-quit',()=>{quitting=true;if(timer)clearInterval(timer);modes?.dispose();scheduler?.stop();tray?.destroy();tray=null;});
 app.on('window-all-closed',()=>{if(quitting)app.quit();});

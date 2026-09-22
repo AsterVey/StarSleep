@@ -98,7 +98,7 @@ components:
 
 A precise, quiet deadline console for night work. The inherited black-blue field, measured ice-blue geometry and Rajdhani numerals make time legible without making the application feel urgent by default. Chinese interface text remains direct and practical.
 
-This is the implemented v1.2 system, reconciled with `src/style.css`, `src/main.tsx` and `src/components/*`. The existing code-led concentric instrument remains the visual authority; this refresh does not establish a new visual world. The first view leads with the next shutdown, then the real plans that determine it. The smaller instrument gives more room to searchable schedule management.
+This is the implemented v1.3 system, reconciled with `src/style.css`, `src/experience.css`, `src/main.tsx` and `src/components/*`. The existing code-led concentric instrument remains the visual authority. The full console manages real plans, the seven-day view previews upcoming occurrences, and the mini console keeps the next deadline visible. All three surfaces preserve the quiet Chinese-first hierarchy.
 
 **Key Characteristics:**
 
@@ -154,6 +154,10 @@ Rajdhani gives numbers and the small English wordmark a narrow instrument voice.
 
 ## Layout
 
+The full console retains the responsive rules below. Mini mode reuses the same window at 320×168 DIP: a draggable title bar, 34px Rajdhani countdown, single ellipsized plan name and exact execution time. Its four controls are pin, hide to tray, return to full and pause/resume. Open dialogs prevent entering mini; reminders restore the full view. Mini is an explicit window mode, not a mobile breakpoint.
+
+The plan heading adds a filled list/seven-day selector. The agenda uses seven equal date columns above an independently scrolling ruled occurrence list. Date numbers use Rajdhani at 25px, reducing to 23px in stacked windows. Personal templates use the existing wide dialog with a two-column built-in group and a scrolling personal list; template editors retain the ordinary field grid and protected close behavior.
+
 The application is a viewport-height flex column. Title bar, toolbar, optional fault notice and footer surround a flexible workspace with zero minimum flex height. Body scrolling is disabled. The toolbar holds pause/resume, quick timing and settings; a safe-test badge remains visible at every responsive width when safe mode is active.
 
 At standard desktop widths the workspace has side margins of 27px and a two-column grid: `minmax(320px, .72fr) minmax(510px, 1.28fr)`. The left instrument is smaller than the right plan list. At widths up to 1150px the grid becomes `minmax(310px, .7fr) minmax(480px, 1.3fr)`, panel side padding becomes 20px, and the wall clock and secondary running explanation disappear. At widths of at least 1500px, the workspace caps at 1460px with 40px minimum side space and uses `minmax(380px, .7fr) minmax(600px, 1.3fr)`.
@@ -170,7 +174,7 @@ Spacing is compact: small controls use gaps around 7–12px; forms use a 16px tw
 
 ## Elevation & Depth
 
-Depth is tonal rather than card-heavy: a faint radial field, translucent workspace fill, inset controls and fine boundaries. Ordinary buttons and schedule rows have no resting shadows. The orbit uses fine strokes and opacity, not a large glow. Dialogs and toasts receive the only substantial shadows; the dialog backdrop darkens the interface without blur.
+Depth is tonal rather than card-heavy: a faint radial field, translucent workspace fill, inset controls and fine boundaries. Ordinary buttons and schedule rows have no resting shadows. The orbit uses fine strokes and opacity at rest; its explicit signal response adds a small temporary glow. Dialogs and toasts receive the only substantial shadows; the dialog backdrop darkens the interface without blur.
 
 ### Shadow Vocabulary
 
@@ -219,6 +223,16 @@ The console shows the nearest shutdown with an explicit calendar time, compact p
 
 The reminder groups the earliest matching shutdown deadline, bounds its plan-name list, shows the exact execution time and offers cancel or 10/30/60-minute snooze. Alarm actions and automatic-stop time are separately visible. Demo copy explicitly says it will not shut down the computer. A global pause action appears for real reminders.
 
+### Seven-Day Agenda, Templates and Mini
+
+The seven-day selector and date buttons expose selection with `aria-pressed`. Each date pairs weekday, numeric date and occurrence count. Occurrence rows combine an action icon, wrapping name, exact execution time and action label; selecting one opens its source plan. Paused and fault contexts use explicit text. The preview caveat stays below its scroll region.
+
+Personal templates inherit the existing labeled fields, primary save, secondary cancel and discard confirmation. Applying a template opens a prefilled confirmation flow; saving a template itself does not create a plan. Inline edit/delete controls sit beside each personal template's name and recurrence summary.
+
+The instrument's state priority is fault, shutdown reminder, alarm, pause, running plan, idle. Warm amber, lavender and pale rose locally distinguish pause/warning, alarm and fault arcs alongside state text. A circular signal button responds for 850ms with a finite ring and small drop-shadow, followed by a 1500ms click cooldown. Reduced motion retains static text/button feedback. Hidden windows and mini mode stop decorative activity; the appearance setting can disable signal interaction independently.
+
+The mini readout prioritizes the nearest shutdown, falling back to the next reminder when no shutdown exists. It shows dashes for pause, fault or no deadline and directs faults back to the full console. Keep its four controls and exact deadline visible rather than adding management controls.
+
 ### Feedback and Assets
 
 Toasts use the browser top layer and `role="status"`. Fault notices use `role="alert"`. Lucide supplies interface SVG icons; the instrument is authored SVG. Bundled Rajdhani supplies the numeric voice. Pointer ripples are decorative canvas; electronic sounds are generated locally and controlled separately from reminder volume.
@@ -242,9 +256,9 @@ Toasts use the browser top layer and `role="status"`. Fault notices use `role="a
 - **Don't** promote every list row to a shadowed card or add glow to ordinary controls.
 - **Don't** replace the approved visual world with an unrelated concept seed.
 
-## Reviewed Captures
+### Reviewed Captures
 
-These are the authoritative v1.2 review captures from the actual Electron application. Dimensions below are logical DIP; device scaling changes physical image dimensions. Every populated capture uses isolated synthetic schedules and the visible safe-test indicator.
+Current v1.3 review captures are `.impeccable/review/v13/full.png`, `mini.png`, `full-1.png`, `agenda-2.png`, `mini-2.png`, `templates.png`, `template-editor.png` and `settings.png`. The independent finish review accepted all eight captures, covering full/minimum layouts, mini, seven-day preview and dialogs with safe-test fixtures. Earlier v1.2 captures below remain historical evidence. Dimensions are logical DIP; device scaling changes physical image dimensions.
 
 | Capture | Window / scale |
 | --- | --- |
@@ -258,3 +272,5 @@ These are the authoritative v1.2 review captures from the actual Electron applic
 | `artifacts/v12/09-reminder.png` | 1240×820, 100% |
 
 Distribution copies are in `docs/images/v1.2.0/` as `console.png`, `minimum.png`, `scale-125.png`, `scale-150.png`, `scale-200.png`, `editor.png`, `settings.png` and `reminder.png`. The development-only `artifacts/` directory is not included in the source archive.
+
+The v1.3 distribution captures are in `docs/images/v1.3.0/`; `full.png`, `mini.png`, `full-1.png`, `agenda-2.png`, `mini-2.png`, `templates.png`, `template-editor.png` and `settings.png` correspond to the current review set and are included in the source archive.
