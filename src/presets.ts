@@ -4,7 +4,8 @@ import { localDate } from './plan-utils';
 export function normalizePreset(value: unknown): PresetInput {
   const p = value as PresetInput;
   if (!p || typeof p.name !== 'string' || !p.name.trim() || p.name.length > 48 || !['shutdown','alarm'].includes(p.kind)) throw new Error('模板名称需为 1–48 个字，且动作有效');
-  const common = {name:p.name.trim(), kind:p.kind};
+  if(p.notes!==undefined&&(typeof p.notes!=='string'||p.notes.length>500))throw new Error('模板备注最多 500 个字');
+  const common = {name:p.name.trim(), kind:p.kind,...(p.notes?.trim()?{notes:p.notes.trim()}:{})};
   if (p.type === 'quick') {
     if (!Number.isInteger(p.minutes) || p.minutes < 1 || p.minutes > 1440) throw new Error('模板时长应为 1–1440 的整数分钟');
     return {...common,type:'quick',minutes:p.minutes};
@@ -14,10 +15,10 @@ export function normalizePreset(value: unknown): PresetInput {
 }
 export function presetDraft(p: PresetInput, now=Date.now()): PlanInput | QuickInput {
   p=normalizePreset(p);
-  if(p.type==='quick')return {kind:p.kind,minutes:p.minutes,name:p.name};
+  if(p.type==='quick')return {kind:p.kind,minutes:p.minutes,name:p.name,...(p.notes?{notes:p.notes}:{})};
   const date=new Date(now),[h,m]=p.time.split(':').map(Number);date.setHours(h,m,0,0);
   if(+date<=now)date.setDate(date.getDate()+1);
-  return {name:p.name,kind:p.kind,repeat:p.repeat,time:p.time,weekdays:[...p.weekdays],date:localDate(date),enabled:true};
+  return {name:p.name,kind:p.kind,repeat:p.repeat,time:p.time,weekdays:[...p.weekdays],date:localDate(date),enabled:true,...(p.notes?{notes:p.notes}:{})};
 }
 export function shipStatus(r:RuntimeState,hasPlans:boolean) {
   if(r.storageError)return {key:'fault',label:'故障保护'};

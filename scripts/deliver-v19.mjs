@@ -1,0 +1,14 @@
+import fs from 'node:fs';import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..'),out=path.join(root,'release/v1.9.0'),qa=path.join(root,'artifacts/v19'),images=path.join(root,'docs/images/v1.9.0');
+for(const dir of [out,images,path.join(out,'screenshots'),path.join(out,'verification')])fs.mkdirSync(dir,{recursive:true});
+for(const name of ['startup','observatory','control','workshop','studio-image','studio-native','studio-200','about'])for(const destination of [images,path.join(out,'screenshots')])fs.copyFileSync(path.join(qa,'desktop',name+'.png'),path.join(destination,name+'.png'));
+fs.copyFileSync(path.join(root,'docs/RELEASE-v1.9.0.md'),path.join(out,'更新与使用说明.md'));
+fs.copyFileSync(path.join(root,'docs/VALIDATION-v1.9.0.md'),path.join(out,'测试报告.md'));
+fs.copyFileSync(path.join(qa,'desktop/StarNexus-Codex-Mist.zip'),path.join(out,'StarNexus-Codex-Mist.zip'));
+fs.copyFileSync(path.join(qa,'core-tests.txt'),path.join(out,'verification/core-tests.txt'));
+fs.copyFileSync(path.join(qa,'upgrade.json'),path.join(out,'verification/upgrade.json'));
+for(const directory of ['desktop','regression-qa-market','regression-qa-toolbox','regression-qa-v15','regression-qa-theme-hub'])for(const file of fs.readdirSync(path.join(qa,directory)).filter(f=>f.endsWith('.json')&&!f.includes('failure')))fs.copyFileSync(path.join(qa,directory,file),path.join(out,'verification',directory+'-'+file));
+fs.writeFileSync(path.join(out,'verification/upstream-validator.json'),JSON.stringify({commit:'34335d27d54300eccb325cc652f6c93fef428b84',format:'simple',image:'background.jpg',safeCssStatus:'validated',actualClientApplied:false},null,2));
+fs.writeFileSync(path.join(out,'体验星枢.cmd'),'@echo off\r\nchcp 65001 >nul\r\nsetlocal\r\nset "ELECTRON_RUN_AS_NODE="\r\nset "STARSLEEP_QA_DATA=%~dp0preview-data"\r\nstart "" "%~dp0win-unpacked\\星枢.exe" --safe-mode\r\n');
+fs.writeFileSync(path.join(out,'先读这里.txt'),'星枢 StarNexus v1.9.0\r\n第一作者：AsterVey\r\n\r\n体验：双击 体验星枢.cmd。使用独立数据，不实际关机，不改真实客户端。\r\n安装：双击 StarNexus-Setup-1.9.0.exe。普通启动拥有真实关机能力。\r\n源码：StarNexus-Source-1.9.0.zip 供开发使用，不是安装程序。\r\n图片美化示例：StarNexus-Codex-Mist.zip，交给兼容的 Codex Dream Skin 托盘导入；不是安装包。\r\n启动动画可以跳过，工作台上方有“星际观景”。\r\n自制主题入口：美化工坊 → 主题创作。\r\n\r\n改名继续读取原 StarSleep 数据目录，历史产物保留。\r\n本轮未发布 GitHub，未执行真实关机及真实客户端改写。\r\n');
+console.log('Delivery material prepared');

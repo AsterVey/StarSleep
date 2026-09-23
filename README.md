@@ -1,39 +1,74 @@
 <div align="center">
 
-<img src="resources/icon.png" width="76" height="76" alt="星眠图标" />
+<img src="resources/icon.png" width="76" height="76" alt="星枢图标" />
 
-# 星眠 · Star Sleep
+# 星枢 · StarNexus
 
-**v1.3.0 本地体验版，尚未发布到 GitHub。**
+**v1.10.0：Ctrl+K 快捷入口、Token 每日明细、系统运行摘要与体检筛选。Windows 安装包与源码现已提供。**
 
-**让 Agent 继续工作，也给电脑设一个下班时间。**
+**让灵感有处汇聚，让工作从容启程。**
 
-为夜间工作准备的 Windows 定时关机与闹钟工具。<br/>
-冷蓝星舰控制台、环形倒计时、指尖波纹。到点提醒，按时休息。
+为 Codex、Claude 与 DeepSeek 用户准备的 Windows Agent 工作台。<br/>
+用量、Skills、社区主题与夜间联动，汇聚在同一个星际空间。
 
-[下载 v1.1.0](https://github.com/AsterVey/StarSleep/releases/tag/v1.1.0) · [GitHub 项目](https://github.com/AsterVey/StarSleep) · [反馈问题](https://github.com/AsterVey/StarSleep/issues) · [作者主页](https://github.com/AsterVey)
+[下载安装 EXE](https://github.com/AsterVey/StarSleep/releases/download/v1.10.0/StarNexus-Setup-1.10.0.exe) · [GitHub 项目](https://github.com/AsterVey/StarSleep) · [反馈问题](https://github.com/AsterVey/StarSleep/issues) · [作者主页](https://github.com/AsterVey)
 
-Windows 10 / 11 · x64 · 中文界面 · 离线运行
+Windows 10 / 11 · x64 · 中文界面 · 定时离线运行 / GitHub 搜索需联网
 
 </div>
 
-![v1.3.0 控制台与七天安排](docs/images/v1.3.0/full.png)
+![星枢星门跃迁](docs/images/v1.9.1/title.png)
 
 <p align="center"><sub>真实桌面截图；计划为测试示例，运行于安全测试模式。</sub></p>
 
 ## 选择你的版本
 
-**普通用户安装软件：双击 `StarSleep-Setup-1.3.0.exe`。** 本地文件位于 `release/v1.3.0/`，无需另装 Node.js。
-`StarSleep-Source-1.3.0.zip` 是开发源码，**不是安装包的压缩版**。
+当前版本为 **v1.10.0**。[点击下载 Windows x64 安装 EXE](https://github.com/AsterVey/StarSleep/releases/download/v1.10.0/StarNexus-Setup-1.10.0.exe)，下载后双击安装。完整附件见 [Release 页面](https://github.com/AsterVey/StarSleep/releases/tag/v1.10.0)。源码 ZIP 供开发使用，不是安装包。
 
-本地交付目录还提供 `体验新版.cmd`：打开隔离的安全体验窗口，数据仅写入体验目录，不影响原有计划，也不会真实关机。
+**v1.10.0 新增**全局功能搜索、每日 Token 明细与缓存读取占比、运行摘要和体检待处理项筛选；修复手动刷新缓存与体检错误残留，保留工具页筛选和备注草稿。[更新说明](docs/RELEASE-v1.10.0.md) · [测试报告](docs/VALIDATION-v1.10.0.md)。
+
+![快捷入口](docs/images/v1.10.0/commands.png)
+
+**v1.9.1 新增**约 6.4 秒的三阶段星门跃迁开场，随时跳过，支持观景重播。提醒优先，静态模式直接进入工作台。[更新说明](docs/RELEASE-v1.9.1.md) · [测试报告](docs/VALIDATION-v1.9.1.md)。
+
+**v1.9.0 新增**可跳过启动动画、星际观景、重新整理的工作布局，以及三端自制配色和 Codex 图片主题 ZIP。第一作者 AsterVey；保留旧数据目录与连接协议。[新版说明](docs/RELEASE-v1.9.0.md) · [测试报告](docs/VALIDATION-v1.9.0.md)。
+
+**v1.8.0 功能继续保留：**四个空间节点与单 Canvas 三维场景；空白区滚轮缩放，功能面板可拖动伸缩。社区工坊提供 8 个资源入口、5 个固定提交的主题下载，支持取消、重试、文件拖入、来源追踪和效果确认。只读体检检查配置与 Skills 文件；独立操作日志修复安装中断后的记录一致性。[新版使用说明](docs/RELEASE-v1.8.0.md) · [测试报告](docs/VALIDATION-v1.8.0.md) · [开源复用](docs/OPEN-SOURCE-v1.8.0.md)。
+
+![星枢主题创作](docs/images/v1.9.0/studio-image.png)
+
+延续 **Agent 工作台 → 发现与安装**：搜索 GitHub 公开仓库，发现 Skills，查看固定提交的文件原文与静态风险线索，安装到 Codex / Claude Code / DeepSeek Harness 的目录；Claude 桌面聊天提供 ZIP 导出后上传指引。安装记录支持移除和恢复，拒绝覆盖或删除用户修改。详见 [v1.7.0 使用说明](docs/RELEASE-v1.7.0.md) 和 [开源复用记录](docs/OPEN-SOURCE-v1.7.0.md)。
+
+点击底部 **Agent 工具箱**：按时间和模型查看 Codex / Claude Code 本地 Token 用量，搜索 10 项作者开源资源、保存收藏备注，查看本机 Skills。统计复用 **ccusage 20.0.24（MIT）** 原版 Windows 引擎；不等于账号额度或账单，DeepSeek / Claude Chat 用量尚未接入。详见 [v1.6.0 使用与验证说明](docs/RELEASE-v1.6.0.md) 和 [开源复用记录](docs/OPEN-SOURCE-v1.6.0.md)。
+
+还想继续工作时，点击底部 **临时暂停**，选择时长或恢复时间；托盘也有快捷入口。暂停期间错过的任务会跳过，Agent 关机联动需要重新手动开启。创建计划或快捷计时时可填写 **备注**，如“先保存文件，再检查构建结果”，提醒时一起显示。详见 [v1.5.0 使用说明](docs/RELEASE-v1.5.0.md)。
+
+美化入口：**美化工坊 → 我的主题 → 原界面美化**。支持 Codex 原生主题、Claude Theme Mod JSON、DeepSeek Dream Skin 主题包，以及 CSS / Dream Skin ZIP 收藏导出。图片导入后进入 DeepSeek 背景库。配置条件与操作步骤见 [三端美化说明](docs/CLIENT-THEMES.md)；并非任意主题都能跨客户端应用。
+
+在「美化工坊 → 我的主题 → DeepSeek 背景」预览「潮汐琉璃」「云湾」，或导入自己的 PNG / JPEG / WebP 图片。导出后，在 DeepSeek 的「设置 → Theme / 外观 → 选择图片」导入。图片库本身不会自动改写客户端设置。详细说明见 [v1.4.2 更新与验证](docs/RELEASE-v1.4.2.md)。
+
+**v1.4.1 接入修复**：安全体验现在提供“接入真实 Codex（不关机）”，原先的隔离写入明确命名为“模拟配置”。配置完成后，在 Codex 设置的 Hooks 页面审核并信任星眠 hooks，再发送新任务。文件写入、客户端信任和收到任务事件是三个不同阶段。详见 [接入修复与验证](docs/RELEASE-v1.4.1.md)。
+
+**v1.4.0 起**增加了给 Codex／Claude 原界面配置主题的入口。Codex 支持原生主题字段的备份、应用与恢复；Claude 必须先有兼容加载器，本机商店版尚不支持直接应用。Agent 联动已完成星眠侧安全模拟，真实客户端全流程仍待验收。先阅读 [预览版边界](docs/RELEASE-v1.4.0.md) 与 [客户端美化说明](docs/CLIENT-THEMES.md)，不要把导入主题库理解为已经换肤。
+
+**普通用户安装软件：双击 `StarNexus-Setup-1.10.0.exe`。** 本地文件位于 `release/v1.10.0/`，无需另装 Node.js。
+`StarNexus-Source-1.10.0.zip` 是开发源码，**不是安装包的压缩版**。
+
+本地交付目录还提供 `体验星枢.cmd`：打开隔离的安全体验窗口，数据仅写入体验目录，不影响原有计划，也不会真实关机。
 需要正式使用定时关机时再安装 EXE；主动安装新版会升级现有安装。
 
 | 版本 | 包含的功能 | 下载 |
 | --- | --- | --- |
+| **v1.10.0 当前版** | Agent 工作台、Skills、主题工坊、星际界面、Token 明细与快捷入口 | [安装 EXE 与源码](https://github.com/AsterVey/StarSleep/releases/tag/v1.10.0) |
+| **v1.8.0 本地体验版** | 3D 星际界面、社区工坊、配置体检、安装中断恢复 | 本地 `release/v1.8.0/`，推荐先运行 `体验新版.cmd` |
+| v1.7.0 本地体验版 | GitHub Skills 搜索、审查与一键安装 | 本地 `release/v1.7.0/` |
+| **v1.6.0 本地体验版** | Token 用量看板、开源资源收藏、本机 Skills 清单 | 本地 `release/v1.6.0/`，先运行 `体验新版.cmd` |
+| **v1.5.0 本地体验版** | 临时暂停自动恢复、计划备注与备注搜索、200% 缩放操作修正 | 本地 `release/v1.5.0/`，先运行 `体验新版.cmd` |
+| v1.4.3 本地体验版 | 三端美化文件导入、配置指南及 DeepSeek 背景应用 | 本地 `release/v1.4.3/` |
+| v1.4.0 开发预览 | Codex 原生主题配置、Claude 加载器检测及配置、Agent 联动安全模拟；[适配限制](docs/RELEASE-v1.4.0.md) | 本地 `release/v1.4.0/`，先运行 `体验新版.cmd` |
 | **v1.3.0 本地体验版** | 同窗口迷你模式、未来七天、个人模板与星舰状态互动 | 本地 `release/v1.3.0/` |
 | v1.2.0 本地体验版 | 全新布局、搜索筛选、批量管理、复制与跳过、模板、提醒设置、记录筛选导出 | 本地 `release/v1.2.0/`，等待体验反馈后发布 |
-| **v1.1.0 优化版（推荐）** | 全部基础功能，加快捷计时、全局暂停、计划导入导出与界面优化 | [安装与源码](https://github.com/AsterVey/StarSleep/releases/tag/v1.1.0) |
+| **v1.1.0 历史优化版** | 全部基础功能，加快捷计时、全局暂停、计划导入导出与界面优化 | [安装与源码](https://github.com/AsterVey/StarSleep/releases/tag/v1.1.0) |
 | v1.0.0 基础版 | 定时关机、闹钟、重复计划、提醒、托盘与本地保存 | [安装与源码](https://github.com/AsterVey/StarSleep/releases/tag/v1.0.0) |
 
 历史版本分别保留安装包与源码。升级保留计划；降级前请阅读 [升级与降级说明](docs/UPGRADE.md)。
@@ -155,20 +190,20 @@ Windows 10 / 11 · x64 · 中文界面 · 离线运行
 
 **第一作者：[AsterVey](https://github.com/AsterVey)** · 星眠的发起者与产品设计者
 
-> 我喜欢借助 AI，把日常遇到的问题做成实用、耐看的产品。正在探索学习工具、自动化与游戏交互，也愿意花时间打磨每一个细节。星眠源于一个简单需求：让 Agent 夜间继续工作，也让电脑按时休息。
+> 专注工具、自动化与交互设计，重视实用功能与每一个操作细节。星枢汇聚 Agent 工作、社区资源与个性化配置。
 
-本项目由作者提出需求、确定体验与发布方向，并借助 AI 编程工具完成实现与测试。
+第一作者：AsterVey。
 
-## 许可：可以工作使用，请勿售卖
+## 许可：仅限非商业使用
 
-星眠采用自定义的 **Star Sleep No-Sale License 1.0**，公开源码，允许学习、修改与免费分享。
+当前版本采用 **StarNexus Noncommercial License 2.0**，第一作者 **AsterVey**。
 
-- **允许**个人使用，也允许在公司、接单、商业项目和其他工作场景中使用星眠。
-- **禁止**出售星眠、收费提供下载或解锁，以及将其修改、改名、打包后售卖获利。
-- 免费分发时须保留作者署名、版权及许可说明；修改版须注明修改，不得冒充官方版本。
-- 第三方依赖继续适用各自的许可。
+- 允许个人非商业使用、学习、非商业研究、修改和免费分享。
+- 未经作者书面授权，禁止用于商业项目、企业经营或接单等有偿工作；禁止销售、付费分发、订阅、收费托管及相关收费服务。
+- 分发时须保留署名、版权与许可；改版须注明修改，不能冒充官方版本。
+- 第三方组件与主题适用各自许可证。历史 Release 继续以其随附许可为准。
 
-完整条款以 [LICENSE](LICENSE) 为准。它包含销售限制，因此本项目称为“源码公开”，不宣传为无限制开源软件。
+完整条款见 [LICENSE](LICENSE)。这是限制商业使用的源码公开项目，不属于允许任意用途的开源许可。商业授权可通过 [作者主页](https://github.com/AsterVey)联系。
 
 ## 开发与验证
 

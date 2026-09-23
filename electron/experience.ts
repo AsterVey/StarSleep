@@ -9,7 +9,12 @@ const defaults=():ExperienceData=>({version:1,presets:[],prefs:{interaction:true
 export function validBounds(b:unknown):b is Bounds {const v=b as Bounds;return !!v&&['x','y','width','height'].every(k=>Number.isFinite(v[k as keyof Bounds]))&&v.width>0&&v.height>0&&v.width<=20000&&v.height<=20000;}
 function preferences(value:ExperiencePrefs):ExperiencePrefs {
   if(!value||typeof value.interaction!=='boolean'||typeof value.miniPinned!=='boolean')throw new Error('体验偏好无效');
-  return {interaction:value.interaction,miniPinned:value.miniPinned};
+  const sceneMode=value.sceneMode??'immersive',motionQuality=value.motionQuality??'adaptive',cameraZoom=value.cameraZoom??1;
+  if(!['immersive','classic'].includes(sceneMode)||!['adaptive','low','static'].includes(motionQuality)||!Number.isFinite(cameraZoom)||cameraZoom<.65||cameraZoom>1.5)throw Error('场景偏好无效');
+  const panels:NonNullable<ExperiencePrefs['panels']>={};
+  if(value.panels!==undefined){if(!value.panels||typeof value.panels!=='object'||Array.isArray(value.panels))throw Error('面板尺寸无效');for(const [key,p]of Object.entries(value.panels)){if(!['control','agent','workshop','system'].includes(key)||!p||!Number.isFinite(p.width)||!Number.isFinite(p.height)||p.width<420||p.width>4000||p.height<240||p.height>3000)throw Error('面板尺寸无效');panels[key as keyof typeof panels]={width:Math.round(p.width),height:Math.round(p.height)};}}
+  if(value.startupAnimation!==undefined&&typeof value.startupAnimation!=='boolean')throw Error('启动动画偏好无效');
+  return {interaction:value.interaction,miniPinned:value.miniPinned,startupAnimation:value.startupAnimation??true,sceneMode,motionQuality,cameraZoom,panels};
 }
 export function parseExperience(raw:string):ExperienceData {
   const v=JSON.parse(raw);

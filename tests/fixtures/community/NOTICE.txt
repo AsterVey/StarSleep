@@ -1,0 +1,11 @@
+Claude Warm for Codex App
+
+This theme adapts the palette from claude-warm-craft-agent-theme:
+https://github.com/YuChenSSR/claude-warm-craft-agent-theme
+
+claude-warm-craft-agent-theme credits Claude Warm for Obsidian:
+https://github.com/amm10090/claude-warm-obsidian-theme
+
+Only the compact Codex app theme settings are included here. This repository
+does not contain a copy of any Codex application files or any private user
+configuration.

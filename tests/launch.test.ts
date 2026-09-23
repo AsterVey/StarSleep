@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {LAUNCH_MS,launchFrame} from '../src/launch-timeline';
+test('launch timeline moves through charge, transit and arrival once',()=>{assert.equal(launchFrame(0).phase,'charge');assert.equal(launchFrame(LAUNCH_MS*.4).phase,'flight');assert.equal(launchFrame(LAUNCH_MS*.85).phase,'arrival');assert.equal(launchFrame(LAUNCH_MS).fade,0);assert.equal(launchFrame(LAUNCH_MS).travel,650);});
+test('camera travel is monotonic, bounded and independent of frame rate',()=>{let previous=0;for(let t=0;t<=LAUNCH_MS;t+=16){const f=launchFrame(t);assert.ok(f.travel>=previous);assert.ok(f.fov>=58&&f.fov<=90);assert.ok(f.boost>=0&&f.boost<=1);assert.ok(f.fade>=0&&f.fade<=1);previous=f.travel;}assert.deepEqual(launchFrame(-5),launchFrame(0));assert.deepEqual(launchFrame(LAUNCH_MS+500),launchFrame(LAUNCH_MS));});

@@ -11,7 +11,7 @@ export function Ripple({active}:{active:boolean}){
  const ref=useRef<HTMLCanvasElement>(null);
  useEffect(()=>{if(!active)return;const c=ref.current!,ctx=c.getContext('2d')!;let waves:{x:number;y:number;t:number}[]=[],frame=0,last=0;
  const resize=()=>{const scale=Math.min(devicePixelRatio,1.5);c.width=innerWidth*scale;c.height=innerHeight*scale;ctx.setTransform(scale,0,0,scale,0,0);};resize();
- const draw=(now:number)=>{ctx.clearRect(0,0,innerWidth,innerHeight);waves=waves.filter(w=>now-w.t<850);for(const w of waves){const p=(now-w.t)/850;ctx.beginPath();ctx.arc(w.x,w.y,5+p*72,0,Math.PI*2);ctx.strokeStyle=`rgba(130,215,252,${(1-p)*.19})`;ctx.stroke();}frame=waves.length?requestAnimationFrame(draw):0;};
+ const draw=(now:number)=>{ctx.clearRect(0,0,innerWidth,innerHeight);waves=waves.filter(w=>now-w.t<850);for(const w of waves){const p=Math.max(0,Math.min(1,(now-w.t)/850));ctx.beginPath();ctx.arc(w.x,w.y,5+p*72,0,Math.PI*2);ctx.strokeStyle=`rgba(130,215,252,${(1-p)*.19})`;ctx.stroke();}frame=waves.length?requestAnimationFrame(draw):0;};
  const move=(e:PointerEvent)=>{const now=performance.now();if(now-last<90)return;last=now;waves.push({x:e.clientX,y:e.clientY,t:now});if(!frame)frame=requestAnimationFrame(draw);};
  window.addEventListener('pointermove',move);window.addEventListener('resize',resize);return()=>{cancelAnimationFrame(frame);window.removeEventListener('pointermove',move);window.removeEventListener('resize',resize);ctx.clearRect(0,0,c.width,c.height);};
  },[active]);return <canvas ref={ref} className="ripples" aria-hidden="true"/>;

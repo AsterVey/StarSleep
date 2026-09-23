@@ -1,5 +1,5 @@
 ---
-name: 星眠 · Star Sleep
+name: 星枢 · StarNexus
 description: Quiet night-work deadline console with Chinese controls, icy blue geometry and orbital timekeeping.
 colors:
   primary: "#ade3fa"
@@ -100,6 +100,8 @@ A precise, quiet deadline console for night work. The inherited black-blue field
 
 This is the implemented v1.3 system, reconciled with `src/style.css`, `src/experience.css`, `src/main.tsx` and `src/components/*`. The existing code-led concentric instrument remains the visual authority. The full console manages real plans, the seven-day view previews upcoming occurrences, and the mini console keeps the next deadline visible. All three surfaces preserve the quiet Chinese-first hierarchy.
 
+The v1.4 original-client theme panel extends this visual system, as implemented in `src/components/Integrations.tsx` and `src/integrations.css`. 星眠 remains an import and configuration assistant: users want to change Codex or Claude's original interface, while this panel retains the cold-blue console. Client compatibility and verification limits are recorded in `docs/CLIENT-THEMES.md`.
+
 **Key Characteristics:**
 
 - Black-blue tonal surfaces, fine cold boundaries and restrained ice-blue actions.
@@ -152,6 +154,8 @@ Rajdhani gives numbers and the small English wordmark a narrow instrument voice.
 
 **The Numbers and Language Rule.** Use Rajdhani for time and numeric emphasis; preserve the Chinese UI stack for explanations, field labels and actions. Keep substantive instructions at the body size rather than inheriting auxiliary metadata sizing.
 
+In the original-client theme panel, client detection explanations, theme instructions and the configuration/recovery caveat use 13px body text with 1.8 line height; the loader guide uses 13px with 1.9 line height. Theme format metadata, short readiness labels, color codes and the palette caption use 11px auxiliary text. The scoped `.theme-layout` override keeps substantive client status and `.integration-small` paragraphs at 13px.
+
 ## Layout
 
 The full console retains the responsive rules below. Mini mode reuses the same window at 320×168 DIP: a draggable title bar, 34px Rajdhani countdown, single ellipsized plan name and exact execution time. Its four controls are pin, hide to tray, return to full and pause/resume. Open dialogs prevent entering mini; reminders restore the full view. Mini is an explicit window mode, not a mobile breakpoint.
@@ -166,11 +170,17 @@ At widths up to 1060px, the instrument stacks above the list inside one framed w
 
 At widths up to 1060px **and** heights up to 760px, the final compact rules take precedence: a 100px orbit sits beside the next-execution strip and presets, the redundant heading is hidden, and the workspace and plans panel clip outer overflow while the list scrolls internally. The 900×650 minimum window uses this mode. The footer and plan lifecycle note remain outside the scrolling list.
 
+At widths up to 1060px **and** heights up to 500px, the v1.5 daily-tools override takes precedence over the internal-list rule above: the workspace becomes the single vertical scrolling surface, and the plan and agenda lists expand naturally within it. This prevents a collapsed plan list in short or zoomed viewports. Footer actions wrap outside this workspace; at widths up to 560px the secondary footer sentence is hidden while actions remain available.
+
 The standard orbit is at most 310px, increasing to 350px on large screens. Height rules override these widths: at widths above 1060px it is 240px at heights up to 900px, then 185px at heights up to 760px. Preserve this cascade when adjusting the layout; earlier declarations are not the final computed values.
 
 Spacing is compact: small controls use gaps around 7–12px; forms use a 16px two-column gap; major dialog actions use 24px separation. The editor pairs action/repetition and time/date fields. Dialogs are centered at 530px, or 640px for settings and records, constrained to the viewport minus 36px in each axis, with internal overflow scrolling. Dialog padding reduces from 25px to 20px at narrow widths.
 
 **The Visible Lifecycle Rule.** Keep the tray explanation, execution limitations and footer actions visible at supported sizes. Shrink the orbit and scroll the plan list before pushing operational context out of view.
+
+The original-client theme panel uses one framed workspace with internally scrolling content: a smaller theme library beside a larger client-status and theme-detail area. Its grid is `minmax(235px, .72fr) minmax(350px, 1.28fr)`, changing at 1060px to `minmax(225px, .78fr) minmax(300px, 1.22fr)` with 18px section padding. At 720px it stacks, replacing the library's right divider with a bottom divider. Action groups wrap; detection precedes the selected theme, and restore actions and the loader guide follow its apply/export controls.
+
+The v1.6.0 Agent toolbox uses a framed workspace with three persistent destination tabs above an internally scrolling body. Usage summaries lead into daily bars and a two-column model/source section; resources pair a ruled selection list with a larger detail area. At widths up to 720px these detail grids stack, the resource list gets its own bounded scroll region, and summary metrics become two columns beneath the total. Compact-height rules reduce heading and tab spacing while keeping return navigation, pause, settings, the safe-test badge and footer actions reachable. Preserve scrolling to the resource actions and notes at high zoom.
 
 ## Elevation & Depth
 
@@ -237,6 +247,42 @@ The mini readout prioritizes the nearest shutdown, falling back to the next remi
 
 Toasts use the browser top layer and `role="status"`. Fault notices use `role="alert"`. Lucide supplies interface SVG icons; the instrument is authored SVG. Bundled Rajdhani supplies the numeric voice. Pointer ripples are decorative canvas; electronic sounds are generated locally and controlled separately from reminder volume.
 
+### Original-Client Theme Configuration
+
+This operational panel follows the Operate contract: make the target, readiness and next action easy to identify within the existing cold-blue console. Under “Agent 与美化 → 原界面美化”, the ruled library shows each imported theme's name, format and small swatches; selection uses a navy fill and `aria-pressed`. The detail area begins with Codex/Claude detection, explicit readiness text and “重新检测客户端”. The palette is a color reference, not a screenshot or a simulation of either client.
+
+Keep three outcomes distinct: **import/preview** adds a theme to the local library; **apply** writes supported appearance configuration for the named client; **visual acceptance** requires checking that client's original interface. Importing, copying or exporting never claims the theme is applied. Removing a library item does not restore the client's appearance. Feedback uses the panel's `role="status"` region.
+
+“应用到 Codex” and “应用到 Claude” are the selected format's primary actions and are disabled while busy or when that client is not ready. Copy/export remain secondary. Separate restore actions and “Claude 美化配置指南” stay available below; Codex restore additionally depends on a recorded restore state. The guide explains loader compatibility and manual setup before re-detection. The safe-experience copy explicitly identifies isolated configuration, and saved configuration still requires checking the original client. Do not imply that readiness or a successful file write verifies rendering.
+
+As documented on 2026-09-22, Codex native appearance apply/restore was checked on isolated configuration copies; the real client's visual result remains unverified. The detected Claude Store build has no supported loader and cannot directly apply a theme. Compatible standalone Claude installations require the separately configured loader, which 星眠 does not install automatically. Dream Skin ZIPs support inspection, storage and original-package export without automatic engine installation; DeepSeek colors support import/copy/export for their external loader. These are format-specific capabilities, not universal client skinning support.
+
+### Theme File Hub (v1.4.3)
+
+The theme hub preserves the existing navy-and-ice console, ruled library, native fields and internally scrolling two-column layout. “导入美化文件” accepts the supported theme formats and background images; images enter the separate background gallery. The labeled “适用客户端” select filters all themes, Codex, Claude Desktop, DeepSeek Harness or custom CSS, with a distinct no-match explanation. Selected rows retain their navy fill and `aria-pressed`; format names remain visible so a client filter does not imply that all its formats use the same loader.
+
+Readiness now covers all three clients before the selected file's actions. DeepSeek includes an explicit data-directory selection and displays its configuration path. Keep the primary action specific to both target and format: native Codex, Claude Theme Mod and DeepSeek Dream Skin themes have readiness-gated apply buttons; Codex Dream Skin ZIP, older DSH UI Appearance colors and standalone CSS lead to the matching configuration guide. CSS remains inert library content for copying or unchanged export, with compatibility determined by its author's loader and client version. The “三端配置指南” groups setup by client, then explains standalone CSS. Restore actions remain separate; Codex and DeepSeek restoration depend on recorded restore state.
+
+This extends the v1.4.2 wallpaper workflow: “配置到 DeepSeek” is now primary and image export is secondary. Numbered instructions lead from selecting the data directory and detecting Dream Skin to fully exiting DeepSeek, configuring the image and reopening the original client. The gallery's preview caption and feedback still distinguish collection, configuration and actual rendering. Library removal does not restore an applied appearance. Retain the existing 13px explanatory copy, wrapping action groups, narrow stacking and compact-height chrome; no design tokens change.
+
+### Temporary Pause and Plan Notes (v1.5.0)
+
+The temporary-pause dialog extends the existing labeled fields, filled selections and execution-preview inset. Offer 15/30/60/120-minute durations or an exact future date and time within 24 hours. Show the absolute expected resume time before confirmation and the current saved deadline when already paused; “一直暂停” remains a separate secondary action. Keep the missed-execution explanation and Agent consequences beside confirmation: missed tasks are skipped, current reminders and ringing stop, and Agent night linkage is disarmed without automatic rearming. The caution also distinguishes reopening with a saved deadline from running while exited and preserves storage-fault protection. The footer exposes “临时暂停” and, where its secondary sentence fits, the saved resume time.
+
+Optional notes use a labeled, three-row multiline field with a 500-character limit, live count and adjacent local-storage/export explanation. Notes retain 13px body text; the counter remains an established 11px auxiliary role. Plan search includes notes. List rows preserve newlines and wrap notes into a two-line preview; reminders show the full note in a restrained navy inset beside its plan name. Keep the editor's full content available rather than treating the list preview as the stored value.
+
+**The Pause Decision Rule.** Show an absolute resume time and skipped-task, reminder and Agent consequences before confirming temporary pause; distinguish timed resume from indefinite pause.
+
+**The Notes Context Rule.** Keep optional notes readable as body text, show the character count and export inclusion beside editing, and reserve truncation for the two-line plan-list preview rather than the active reminder.
+
+### Agent Toolbox (v1.6.0)
+
+The toolbox extends the same navy-and-ice system through “用量看板”, “开源资源” and “本机 Skills”. Tabs use the existing ice underline and `aria-pressed`; fields, wrapping action groups and selected resource rows reuse inset navy and explicit selection. Keep substantive scope and instructions at 13px, metadata at the established auxiliary size, and usage totals in tabular Rajdhani. The implementation is `src/components/Toolbox.tsx`, `src/toolbox.css` and the toolbox route in `src/main.tsx`.
+
+The usage surface puts today/7-day/30-day range, source filter, manual refresh and summary export before totals and daily bars. Keep the unmodified ccusage 20.0.24 engine attribution, update time, model distribution and explicit source status available below. Explain the readable-log scope beside the totals, including cache accounting and unsupported sources. Automatic refresh runs every five minutes while the page is visible; hiding it stops new scans. Resource search, category/client filters and favorites lead to a selected detail with author, license, use case, instructions, direct author-repository action and personal notes. Local Skills is a searchable read-only file inventory with directory reveal and an explicit scan boundary.
+
+**The Toolbox Evidence Rule.** Keep readable-log totals distinct from account quotas or subscription bills, resource favorites distinct from installation, and local skill-file presence distinct from client enablement; show scope and source state beside the relevant action or result.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -258,6 +304,14 @@ Toasts use the browser top layer and `role="status"`. Fault notices use `role="a
 
 ### Reviewed Captures
 
+The v1.6.0 toolbox finish review disposition is **ship**, with no material fixes outstanding across 16 accepted captures in `artifacts/v16/`. This document pass inspected `desktop-usage.png`, `desktop-resources.png`, `zoom200-resource-actions.png` and `local-skills.png`. The review covers the toolbox's desktop/compact/zoomed surfaces and action reachability within the incumbent console. Reported validation passed 116 unit tests, six packaged-desktop scenarios and virtual-clock lifecycle checks; a real Codex log read recognized 28 days. Missing/error source states, model/source detail and selected-directory flows were not independently visually captured. No actual shutdown was performed. This bounded extension review does not certify the whole application; the existing visual world, tokens and earlier verification history remain unchanged.
+
+The v1.5.0 daily-tools finish review disposition is **ship**, with no material fixes outstanding. All 13 captures in `artifacts/v15/` were accepted: desktop/compact/125%/150%/200% pause and action views, desktop and 200% note editors, and the reminder. The document pass inspected `desktop-pause.png`, `desktop-notes.png`, `zoom200-actions.png` and `reminder.png`. Reported validation passed 108 unit tests, five packaged-desktop scenarios and three theme-regression groups. This is a bounded extension review, not whole-application recertification: the exact-time pause branch, mini/tray and template surfaces were not separately captured in this set, and no actual shutdown was performed. Incumbent design tokens and the visual world are unchanged.
+
+The v1.4.3 theme-hub finish review disposition is **ship** for all ten captures in `artifacts/v143/`: `desktop.png`, `desktop-actions.png`, `compact.png`, `compact-actions.png`, `zoom125.png`, `zoom125-actions.png`, `zoom150.png`, `zoom150-actions.png`, `zoom200.png` and `zoom200-actions.png`. This covers the 星眠 panel and action reachability at desktop, compact, 125%, 150% and 200% settings; original-client visual acceptance remains separate.
+
+The v1.4 theme-panel finish review disposition is **ship for the 星眠 panel only**. Its sole requested body-text correction to 13px is resolved. This disposition does not cover successful skinning or visual acceptance inside Codex or Claude; those original-client results remain unverified.
+
 Current v1.3 review captures are `.impeccable/review/v13/full.png`, `mini.png`, `full-1.png`, `agenda-2.png`, `mini-2.png`, `templates.png`, `template-editor.png` and `settings.png`. The independent finish review accepted all eight captures, covering full/minimum layouts, mini, seven-day preview and dialogs with safe-test fixtures. Earlier v1.2 captures below remain historical evidence. Dimensions are logical DIP; device scaling changes physical image dimensions.
 
 | Capture | Window / scale |
@@ -274,3 +328,36 @@ Current v1.3 review captures are `.impeccable/review/v13/full.png`, `mini.png`, 
 Distribution copies are in `docs/images/v1.2.0/` as `console.png`, `minimum.png`, `scale-125.png`, `scale-150.png`, `scale-200.png`, `editor.png`, `settings.png` and `reminder.png`. The development-only `artifacts/` directory is not included in the source archive.
 
 The v1.3 distribution captures are in `docs/images/v1.3.0/`; `full.png`, `mini.png`, `full-1.png`, `agenda-2.png`, `mini-2.png`, `templates.png`, `template-editor.png` and `settings.png` correspond to the current review set and are included in the source archive.
+
+### DeepSeek Wallpaper Extension (v1.4.2)
+
+“DeepSeek 背景” inherits the navy-and-ice Chinese console. An image-led collection sits beside a larger image preview; both use 16:9 crops and gently rounded corners (8px). Selected tiles pair an ice border with `aria-pressed`. At widths up to 720px the collection stacks above the preview, with two thumbnail columns. At heights up to 500px the integration view compacts global chrome while retaining pause, settings, the safe-test badge and return navigation.
+
+The original Mist wallpapers “潮汐琉璃” and “云湾” are labeled AI-generated. Export is the primary action; numbered, 13px instructions explain manual import through Dream Skin. Preview captions distinguish the image from the actual DeepSeek result. Export, selection and library removal never imply that a background has been applied to the client.
+
+Implementation: `src/components/Wallpapers.tsx`, `src/components/Integrations.tsx` and `src/integrations.css`. Independent finish review: **ship**, with no outstanding fixes. Reviewed captures: `artifacts/v142/desktop.png`, `compact.png`, `zoom200.png` and `zoom200-actions.png`; this disposition covers the wallpaper panel, not native-client visual acceptance.
+
+## v1.7.0 Skills discovery
+
+The toolbox adds a discovery tab with task-oriented search, repository results, a pinned-version audit, and installation history. Existing navy/ice tokens remain unchanged. File text is rendered literally, never as executable HTML. Review findings and source text share a two-column desktop layout and stack below 1000px. Installation shows the exact target and a deliberate confirmation. Success is file-level, not a claim that an Agent has loaded the skill. History uses inline removal confirmation and reversible restore. High-zoom layouts scroll and preserve keyboard access.
+
+## v1.8.0 — Immersive flight deck
+
+Surface mode: Operate inside an Experience scene. The approved cold-blue identity remains; the shell becomes four fixed space nodes over a single WebGL canvas. The camera, gate, orbital geometry and depth trails supply movement; all content remains ordinary keyboard-accessible DOM. Header status, pause, mini and settings stay reachable even at high zoom. Current panel size is bounded to the visible viewport; the lower-right handle and three presets share one persistence path.
+
+The scene uses #050e1c depth, #84d9e9 gate highlights and #526eb4 orbital accents. Functional surfaces use #091727 with high opacity, #e0edf7 text and #abc6d9 supporting text. Theme gallery previews are controlled color mockups with a visible non-screenshot label; author, format, loader and apply state remain alongside each action. No remote stylesheet or script is rendered.
+
+Behavior: 600 ms route travel, 0.65–1.5 zoom, 60 FPS target while active and 24 FPS target after 15 seconds idle. A production policy reduces density, pixel ratio and additive glow before static fallback. Hidden/minimized/mini cancels the decoration loop; reduced motion renders static states; real warnings freeze camera travel immediately. Classic mode disposes WebGL.
+
+Visual review completed as a batch covering full, narrow, library and 100–200% layouts. The correction batch reduced repeated client status content, repaired short-height header reachability, and strengthened gate/trail visibility. Confirmation uses the packaged v1.8.0 build.
+
+## v1.9.0 refinement
+Startup and observation are Experience surfaces; the regular console and theme studio remain Operate. Keep pause/settings/window controls reachable while panels recede. Never animate the skip control out of view. Use an orbital brand mark, self-hosted Rajdhani wordmark, clear Chinese headings and deliberate scene margins. Gallery covers distinguish palette artwork from actual screenshots. Creation separates local saving, exporting and applying; side-by-side fields and live preview collapse into one column at narrow widths. Preserve full operation at 200% zoom.
+
+## v1.9.1 cinematic arrival
+
+Make scale legible through eight repeated mechanical gates, close foreground silhouettes and a continuous forward camera move. The 6.4-second timeline progresses through charge, transit and arrival, with cold illumination, restrained roll and a slowing title reveal. Keep the center free of functional panels until arrival; leave skip and safety controls immediately operable. No new background music or rapid flashes. The cinematic geometry belongs to the existing renderer and is disposed at exit. Static quality and reduced motion bypass the automatic sequence. Packaged UI checks cover interruptibility, hidden rendering, high zoom and explicit replay with automatic playback disabled.
+
+## v1.10.0 everyday operation
+
+Operate mode: keep the existing scene and typography, reduce duplicated Agent headings and let usage data lead. The command palette searches local actions, prioritizes names, supports arrow keys and restores focus. It only opens existing workflows and yields to reminders. Usage detail uses a native expandable table with horizontal scrolling inside its own region. Missing sources remain visibly incomplete; cache share is a token ratio, not savings or account balance. System status uses a compact definition list above read-only diagnostics; issue counts and a filter make follow-up work easier to find. Preserve tab-local drafts while mounted and stop scheduled usage requests when the usage tab is not visible.

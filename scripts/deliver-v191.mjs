@@ -1,0 +1,10 @@
+import fs from 'node:fs';import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..'),out=path.join(root,'release/v1.9.1'),qa=path.join(root,'artifacts/v191'),images=path.join(root,'docs/images/v1.9.1');
+for(const dir of [out,images,path.join(out,'screenshots'),path.join(out,'verification')])fs.mkdirSync(dir,{recursive:true});
+for(const name of ['charge','flight','arrival','zoom200','title'])for(const destination of [images,path.join(out,'screenshots')])fs.copyFileSync(path.join(qa,name+'.png'),path.join(destination,name+'.png'));
+for(const [from,to] of [['RELEASE-v1.9.1.md','更新与使用说明.md'],['VALIDATION-v1.9.1.md','测试报告.md']])fs.copyFileSync(path.join(root,'docs',from),path.join(out,to));
+for(const name of ['core-tests.txt','results.json','title-check.json'])fs.copyFileSync(path.join(qa,name),path.join(out,'verification',name));
+fs.copyFileSync(path.join(qa,'星枢-v1.9.1-星门跃迁.webm'),path.join(out,'星枢-v1.9.1-星门跃迁.webm'));
+fs.writeFileSync(path.join(out,'体验星枢.cmd'),'@echo off\r\nchcp 65001 >nul\r\nsetlocal\r\nset "ELECTRON_RUN_AS_NODE="\r\nset "STARSLEEP_QA_DATA=%~dp0preview-data"\r\nstart "" "%~dp0win-unpacked\\星枢.exe" --safe-mode\r\n');
+fs.writeFileSync(path.join(out,'先读这里.txt'),'星枢 StarNexus v1.9.1 · 第一作者 AsterVey\r\n\r\n先体验：双击 体验星枢.cmd，使用独立数据，不实际关机。\r\n安装：双击 StarNexus-Setup-1.9.1.exe，普通启动拥有真实关机能力。\r\n源码：StarNexus-Source-1.9.1.zip 用于开发，不是安装程序。\r\n\r\n开场约 6.4 秒，可点击进入工作台或按 Esc 跳过。\r\n工作台的 星际观景 → 重播开场 可再次观看。\r\n设置中可以关闭启动动画、启用减少动态效果或选择静态档位。\r\n本轮未发布 GitHub，所有旧版产物保留。\r\n');
+console.log('v1.9.1 delivery material prepared');

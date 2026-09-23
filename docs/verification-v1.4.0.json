@@ -1,0 +1,59 @@
+{
+  "version": "1.4.0",
+  "unitTests": 87,
+  "desktopRegressionChecks": 14,
+  "packagedChecks": [
+    {
+      "name": "theme import and clipboard configuration through real UI",
+      "passed": true
+    },
+    {
+      "name": "DSH and Claude formats, duplicate rejection, backup and restore in isolated client directory",
+      "passed": true
+    },
+    {
+      "name": "connection config preserves foreign hooks, idempotent install and targeted uninstall",
+      "passed": true
+    },
+    {
+      "name": "PowerShell hook bridge emits completion context and reports from a live process",
+      "passed": true
+    },
+    {
+      "name": "multiple task selection and explicit confirmation, then waiting input cancels countdown eligibility",
+      "passed": true
+    },
+    {
+      "name": "hidden window continues monitoring; completed task restores full warning then safe executor runs",
+      "passed": true
+    },
+    {
+      "name": "pause removes armed watch and restart never re-arms it",
+      "passed": true
+    },
+    {
+      "name": "native-sized screenshots at common scales, with controls accessible",
+      "passed": true
+    },
+    {
+      "name": "pointer ripples tolerate a frame timestamp preceding the input event",
+      "passed": true
+    },
+    {
+      "name": "Codex native apply and selective restore through desktop controls",
+      "passed": true
+    },
+    {
+      "name": "Claude theme write restores exact previous file and rejects outside changes",
+      "passed": true
+    },
+    {
+      "name": "configuration controls remain reachable at 900x650 and 125/150/200 percent zoom",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "realShutdownTested": false,
+  "nativeVisualThemeVerified": false,
+  "claudeMsixSupported": false
+}

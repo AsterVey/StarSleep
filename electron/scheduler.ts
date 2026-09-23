@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData, QuickInput, PlanDefinition, Settings, Agenda } from '../src/shared';
+import type { Kind, Occurrence, Plan, PlanInput, Snapshot, StoreData, QuickInput, PlanDefinition, Settings, Agenda, PauseInput } from '../src/shared';
 import { classifyImport } from './transfer';
 export const WARNING = 5 * 60_000;
 export const defaults = (): StoreData => ({ version: 2, paused: false, plans: [], handled: {}, overrides: {}, logs: [], settings: { sound: true, volume: 0.5, reducedMotion: false, warningMinutes: 5, alarmSeconds: 60 } });
 const keyFor = (p: Plan, at: number) => `${p.id}:${p.revision}:${at}`;
 export function validate(input: PlanInput, now: number) {
   if (!input || typeof input.name !== 'string' || !input.name.trim() || input.name.length > 48) throw new Error('请输入 1–48 个字的计划名称');
+  if(input.notes!==undefined&&(typeof input.notes!=='string'||input.notes.length>500))throw new Error('计划备注最多 500 个字');
   if (!['shutdown', 'alarm'].includes(input.kind) || !['once', 'daily', 'weekly'].includes(input.repeat)) throw new Error('计划类型无效');
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.time)) throw new Error('请选择有效的时间');
   if (!Array.isArray(input.weekdays) || input.weekdays.some(d => !Number.isInteger(d) || d < 0 || d > 6)) throw new Error('星期设置无效');
@@ -36,7 +37,7 @@ export class Scheduler {
   private demoCounter = 0;
   constructor(public data: StoreData, public now: () => number, private persist: () => void, private shutdown: () => void | Promise<void>, private notify: (kind: Kind) => void) { this.last = now(); }
   log(text: string, level: 'info' | 'error' = 'info') { this.revision++; this.data.logs.unshift({ at: this.now(), text, level }); this.data.logs = this.data.logs.slice(0,200); }
-  private occurrence(p: Plan, at: number): Occurrence { const key = keyFor(p, at); return { key, planId:p.id, name:p.name, kind:p.kind, at:this.data.overrides[key] ?? at, originalAt:at }; }
+  private occurrence(p: Plan, at: number): Occurrence { const key = keyFor(p, at); return { key, planId:p.id, name:p.name, kind:p.kind, at:this.data.overrides[key] ?? at, originalAt:at, ...(p.notes?{notes:p.notes}:{}) }; }
   private occurrences(p: Plan, now: number) {
     const all = new Set(candidates(p,now));
     for (const key of Object.keys(this.data.overrides)) if (key.startsWith(`${p.id}:${p.revision}:`)) all.add(Number(key.split(':').at(-1)));
@@ -69,6 +70,7 @@ export class Scheduler {
     validate(input,exactAt===undefined?this.now():-Infinity);
     if (id && !old) throw new Error('该计划已不存在，请刷新后重试');
     const p:Plan={ name:input.name.trim(), kind:input.kind, repeat:input.repeat, date:input.date, time:input.time, weekdays:[...new Set(input.weekdays)].sort(), enabled:input.enabled, id:old?.id??randomUUID(), revision:(old?.revision??0)+1, createdAt:old?.createdAt??this.now(), ...(exactAt===undefined?{}:{exactAt}) };
+    if(input.notes?.trim())p.notes=input.notes.trim();
     if (old) { this.clearPlan(old.id); this.data.plans=this.data.plans.map(x=>x.id===id?p:x); } else this.data.plans.push(p);
     this.log(`${p.name} · ${old?'已修改':'已创建'}`); this.persist(); this.tick();
   }
@@ -77,14 +79,22 @@ export class Scheduler {
     if(input?.name!==undefined&&(typeof input.name!=='string'||!input.name.trim()||input.name.length>48))throw new Error('计划名称需为 1–48 个字');
     if(!input||!['shutdown','alarm'].includes(input.kind)||!Number.isInteger(input.minutes)||input.minutes<1||input.minutes>1440)throw new Error('请输入 1–1440 的整数分钟');
     const at=this.now()+input.minutes*60_000,d=new Date(at);
-    this.save({name:input.name?.trim()??`${input.minutes} 分钟后${input.kind==='shutdown'?'关机':'提醒'}`,kind:input.kind,repeat:'once',date:localDate(d),time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,weekdays:[],enabled:true},undefined,at);
+    this.save({name:input.name?.trim()??`${input.minutes} 分钟后${input.kind==='shutdown'?'关机':'提醒'}`,kind:input.kind,repeat:'once',date:localDate(d),time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,weekdays:[],enabled:true,notes:input.notes},undefined,at);
   }
-  setPaused(paused: boolean) {
+  pauseFor(input:PauseInput){
+    const now=this.now();if(!input||typeof input!=='object'||(input.minutes!==undefined)===(input.until!==undefined))throw new Error('请选择暂停时长或恢复时间');
+    if(input.minutes!==undefined&&(!Number.isInteger(input.minutes)||input.minutes<1||input.minutes>1440))throw new Error('暂停时长需为 1–1440 的整数分钟');
+    const until=input.minutes!==undefined?now+input.minutes*60_000:input.until;
+    if(!Number.isSafeInteger(until)||until<=now||until>now+86400_000)throw new Error('恢复时间须在未来 24 小时内');
+    this.setPaused(true,until);
+  }
+  setPaused(paused: boolean,until?:number) {
     if(typeof paused!=='boolean')throw new Error('暂停状态无效');
     if(!this.active)throw new Error('自动执行因故障停止，请排查后重新打开软件');
-    if(this.data.paused===paused)return;
-    this.data.paused=paused;this.warnings=[];this.alarms=[];
-    this.log(paused?'已暂停全部计划':'已恢复计划 · 跳过暂停期间错过的任务');this.persist();
+    if(until!==undefined&&(!paused||!Number.isSafeInteger(until)||until<=this.now()))throw new Error('恢复时间无效');
+    if(this.data.paused===paused&&this.data.pauseUntil===until)return;
+    this.data.paused=paused;if(until===undefined)delete this.data.pauseUntil;else this.data.pauseUntil=until;this.warnings=[];this.alarms=[];
+    this.log(paused?(until?`全部计划暂时暂停 · 将于 ${new Date(until).toLocaleString('zh-CN',{hour12:false})} 恢复`:'已暂停全部计划 · 手动恢复'):'已恢复计划 · 跳过暂停期间错过的任务');this.persist();
     if(!paused)this.reconcile('全部计划恢复');else this.last=this.now();
   }
   updateSettings(value: Settings) {
@@ -141,6 +151,7 @@ export class Scheduler {
   tick() {
     if (!this.active) return;
     const now=this.now();
+    if(this.data.paused&&this.data.pauseUntil!==undefined&&now>=this.data.pauseUntil){this.setPaused(false);return;}
     const before = [...this.warnings, ...this.alarms].map(o => o.key).join('|');
     if(this.data.paused){
       const expired=this.warnings.some(o=>o.demo&&o.at<=now);
@@ -181,6 +192,6 @@ export class Scheduler {
       const date=p.exactAt===undefined?p.date:localDate(new Date(p.exactAt));
       const time=p.exactAt===undefined?p.time:`${String(new Date(p.exactAt).getHours()).padStart(2,'0')}:${String(new Date(p.exactAt).getMinutes()).padStart(2,'0')}`;
       return {...p,date,time,nextAt:next,status:!p.enabled?'已停用':next?'等待执行':p.repeat==='once'?(p.outcome??'已错过'):'等待下一次'};
-    }),warnings:this.warnings,alarms:this.alarms,logs:this.data.logs,settings:this.data.settings,now,safeMode,paused:this.data.paused};
+    }),warnings:this.warnings,alarms:this.alarms,logs:this.data.logs,settings:this.data.settings,now,safeMode,paused:this.data.paused,...(this.data.pauseUntil===undefined?{}:{pauseUntil:this.data.pauseUntil})};
   }
 }

@@ -11,7 +11,7 @@ export function normalizeDefinition(value: unknown): PlanDefinition {
     p.date=localDate(d);p.time=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
   validate({...p,enabled:false},-Infinity);
-  return {name:p.name.trim(),kind:p.kind,repeat:p.repeat,date:p.repeat==='once'?p.date:'',time:p.time,weekdays:p.repeat==='weekly'?[...new Set(p.weekdays)].sort():[],enabled:false,...(p.exactAt===undefined?{}:{exactAt:p.exactAt})};
+  return {name:p.name.trim(),kind:p.kind,repeat:p.repeat,date:p.repeat==='once'?p.date:'',time:p.time,weekdays:p.repeat==='weekly'?[...new Set(p.weekdays)].sort():[],enabled:false,...(p.exactAt===undefined?{}:{exactAt:p.exactAt}),...(p.notes?.trim()?{notes:p.notes.trim()}:{})};
 }
 export function parseTransfer(raw: string): PlanDefinition[] {
   if(Buffer.byteLength(raw,'utf8')>MAX_TRANSFER_BYTES)throw new Error('导入文件不能超过 1 MB');
@@ -26,7 +26,7 @@ export function exportTransfer(plans: Plan[]): string {
   if(Buffer.byteLength(raw,'utf8')>MAX_TRANSFER_BYTES)throw new Error('计划文件超过 1 MB，无法导出');
   return raw;
 }
-const signature=(p:PlanDefinition)=>JSON.stringify([p.name.trim(),p.kind,p.repeat,p.repeat==='once'?(p.exactAt??+new Date(`${p.date}T${p.time}:00`)):p.time,p.repeat==='weekly'?[...new Set(p.weekdays)].sort():[]]);
+const signature=(p:PlanDefinition)=>JSON.stringify([p.name.trim(),p.kind,p.repeat,p.repeat==='once'?(p.exactAt??+new Date(`${p.date}T${p.time}:00`)):p.time,p.repeat==='weekly'?[...new Set(p.weekdays)].sort():[],p.notes?.trim()??'']);
 export function classifyImport(definitions: PlanDefinition[],existing: Plan[],now:number){
   const seen=new Set(existing.map(signature)),accepted:PlanDefinition[]=[],skipped:{name:string;reason:string}[]=[];let duplicate=0,expired=0;
   for(const raw of definitions){const p=normalizeDefinition(raw);

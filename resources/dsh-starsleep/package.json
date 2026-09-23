@@ -1,0 +1,1 @@
+{"name":"dsh-starsleep","version":"1.4.0","type":"module","main":"index.mjs","files":["index.mjs","connection-path.json","cordis.patch.yml"],"dsh":{"bundle":{"patch":"./cordis.patch.yml"}},"license":"SEE LICENSE IN LICENSE"}

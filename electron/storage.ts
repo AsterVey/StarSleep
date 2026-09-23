@@ -7,6 +7,8 @@ export function parseStore(raw:string):StoreData {
   const d=JSON.parse(raw);
   if(![1,2].includes(d.version) || !Array.isArray(d.plans) || !Array.isArray(d.logs) || !d.handled || typeof d.handled!=='object' || Array.isArray(d.handled) || !d.overrides || typeof d.overrides!=='object' || Array.isArray(d.overrides))throw new Error('数据格式无效');
   if(d.version===2 && typeof d.paused!=='boolean')throw new Error('暂停状态损坏');
+  if(d.pauseUntil!==undefined&&(!Number.isSafeInteger(d.pauseUntil)||d.pauseUntil<=0))throw new Error('自动恢复时间损坏');
+  if(!d.paused)delete d.pauseUntil;
   if(new Set(d.plans.map((p:any)=>p?.id)).size!==d.plans.length)throw new Error('计划标识重复');
   for(const p of d.plans) {
     const definition=normalizeDefinition(p);if(p.exactAt!==undefined){p.date=definition.date;p.time=definition.time;}
@@ -27,10 +29,10 @@ export class Storage {
   load():StoreData {
     if(!fs.existsSync(this.file) && !fs.existsSync(this.file+'.bak'))return defaults();
     // An unknown future schema is not corruption: do not silently restore older data.
-    if(fs.existsSync(this.file)){try{const v=JSON.parse(fs.readFileSync(this.file,'utf8')).version;if(typeof v==='number'&&v>2)throw new Error('此数据由更高版本星眠创建，请使用新版打开');}catch(e){if(String(e).includes('更高版本'))throw e;}}
+    if(fs.existsSync(this.file)){try{const v=JSON.parse(fs.readFileSync(this.file,'utf8')).version;if(typeof v==='number'&&v>2)throw new Error('此数据由更高版本星枢创建，请使用新版打开');}catch(e){if(String(e).includes('更高版本'))throw e;}}
     let raw:string|undefined,data:StoreData|undefined;
     try{raw=fs.readFileSync(this.file,'utf8');data=parseStore(raw);}catch{}
-    if(!data){try{raw=fs.readFileSync(this.file+'.bak','utf8');data=parseStore(raw);this.recovery='主数据损坏，已从备份恢复；计划已暂停，请检查后重新启用。';for(const p of data.plans)p.enabled=false;data.paused=true;}catch{}}
+    if(!data){try{raw=fs.readFileSync(this.file+'.bak','utf8');data=parseStore(raw);this.recovery='主数据损坏，已从备份恢复；计划已暂停，请检查后重新启用。';for(const p of data.plans)p.enabled=false;data.paused=true;delete data.pauseUntil;}catch{}}
     if(data&&raw){
       if(JSON.parse(raw).version===1){
         const migrationBackup=path.join(this.dir,'schedules.v1.backup.json');

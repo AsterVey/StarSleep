@@ -1,0 +1,11 @@
+import fs from 'node:fs';import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..'),out=path.join(root,'release/v1.10.0'),qa=path.join(root,'artifacts/v110'),images=path.join(root,'docs/images/v1.10.0');
+for(const dir of [out,images,path.join(out,'screenshots'),path.join(out,'verification')])fs.mkdirSync(dir,{recursive:true});
+for(const name of ['commands','usage','usage-detail','system','commands-200','usage-200'])for(const destination of [images,path.join(out,'screenshots')])fs.copyFileSync(path.join(qa,'packaged',name+'.png'),path.join(destination,name+'.png'));
+for(const [from,to] of [['RELEASE-v1.10.0.md','更新与使用说明.md'],['VALIDATION-v1.10.0.md','测试报告.md']])fs.copyFileSync(path.join(root,'docs',from),path.join(out,to));
+fs.copyFileSync(path.join(qa,'core-tests.txt'),path.join(out,'verification/core-tests.txt'));
+fs.copyFileSync(path.join(qa,'packaged/results.json'),path.join(out,'verification/workspace-results.json'));
+fs.copyFileSync(path.join(qa,'toolbox-regression/results.json'),path.join(out,'verification/toolbox-results.json'));
+fs.writeFileSync(path.join(out,'体验星枢.cmd'),'@echo off\r\nchcp 65001 >nul\r\nsetlocal\r\nset "ELECTRON_RUN_AS_NODE="\r\nset "STARSLEEP_QA_DATA=%~dp0preview-data"\r\nstart "" "%~dp0win-unpacked\\星枢.exe" --safe-mode\r\n');
+fs.writeFileSync(path.join(out,'先读这里.txt'),'星枢 StarNexus v1.10.0 · 第一作者 AsterVey\r\n\r\n先体验：双击 体验星枢.cmd，使用独立数据，不实际关机。\r\n安装：双击 StarNexus-Setup-1.10.0.exe，正常启动拥有真实关机能力。\r\n源码：StarNexus-Source-1.10.0.zip 用于开发，不是安装程序。\r\n\r\nCtrl+K：搜索并打开功能。\r\nAgent 工作台 → 用量看板：每日明细、日均和缓存读取占比。\r\n系统维护：运行摘要、体检待处理项。\r\n备注草稿在切换工具页时保留，退出前仍请点击保存备注。\r\n仅限非商业使用。所有历史版本保留。仓库：https://github.com/AsterVey/StarSleep\r\n');
+console.log('v1.10.0 delivery material prepared');

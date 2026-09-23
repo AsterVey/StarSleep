@@ -1,0 +1,5 @@
+import type {Snapshot} from '../shared';
+export function SystemOverview({state,agentArmed,sceneStatus,experienceError,onLogs}:{state:Snapshot;agentArmed:boolean;sceneStatus:string;experienceError?:string;onLogs:()=>void}){
+ const enabled=state.plans.filter(p=>p.enabled&&p.nextAt!==null).length;
+ return <section className="system-overview" aria-label="运行摘要"><div className="system-summary-heading"><h2>运行摘要</h2><span>{state.safeMode?'安全体验 · 不实际关机':'正常模式 · 仅运行时有效'}</span></div><dl><div><dt>计划调度</dt><dd>{state.storageError?'故障保护':state.paused?'已暂停':'运行中'}</dd><small>{enabled} 条启用且有未来执行的计划</small></div><div><dt>Agent 夜间联动</dt><dd>{agentArmed?'已开启':'未开启'}</dd><small>{agentArmed?'按所选任务的完成信号判断':'需在夜间联动中手动开启'}</small></div><div><dt>界面状态</dt><dd>{sceneStatus}</dd><small>{experienceError?'外观持久化异常':'隐藏窗口后停止装饰绘制'}</small></div></dl>{(state.storageError||experienceError)&&<p className="toolbox-feedback" role="alert">{state.storageError||experienceError}</p>}<div className="system-last-event"><span>最近记录</span><p>{state.logs[0]?.text??'暂无执行记录'}</p><button className="text-button" onClick={onLogs}>查看全部记录</button></div></section>;
+}

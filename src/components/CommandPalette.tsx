@@ -1,0 +1,12 @@
+import {useEffect,useRef,useState} from 'react';
+import {Search,ArrowUpRight} from 'lucide-react';
+import {Modal} from './UI';
+export interface WorkspaceCommand {id:string;label:string;description:string;keywords?:string;disabled?:boolean;run:()=>void;}
+export function filterCommands(commands:WorkspaceCommand[],query:string){const q=query.trim().toLowerCase(),terms=q.split(/\s+/).filter(Boolean);const score=(c:WorkspaceCommand)=>c.label.toLowerCase()===q?3:c.label.toLowerCase().startsWith(q)?2:terms.every(t=>c.label.toLowerCase().includes(t))?1:0;return commands.filter(c=>terms.every(t=>`${c.label} ${c.description} ${c.keywords??''}`.toLowerCase().includes(t))).sort((a,b)=>score(b)-score(a));}
+export function CommandPalette({commands,onClose,onChoose}:{commands:WorkspaceCommand[];onClose:()=>void;onChoose:(command:WorkspaceCommand)=>void}){
+ const [query,setQuery]=useState(''),[index,setIndex]=useState(0),input=useRef<HTMLInputElement>(null);
+ const list=filterCommands(commands,query),active=list[Math.min(index,Math.max(0,list.length-1))];
+ useEffect(()=>{input.current?.focus();},[]);
+ useEffect(()=>{document.getElementById(`command-${active?.id}`)?.scrollIntoView({block:'nearest'});},[active?.id]);
+ return <Modal title="快捷入口" onClose={onClose}><div className="command-search"><Search size={19}/><input ref={input} aria-label="搜索功能" placeholder="输入功能名称，如用量、主题、暂停" value={query} role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="workspace-commands" aria-activedescendant={active?`command-${active.id}`:undefined} onChange={e=>{setQuery(e.target.value);setIndex(0);}} onKeyDown={e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(list.length)setIndex((index+(e.key==='ArrowDown'?1:-1)+list.length)%list.length);}if(e.key==='Enter'){e.preventDefault();if(active&&!active.disabled)onChoose(active);}}}/></div><div className="command-list" id="workspace-commands" role="listbox" aria-label="功能列表">{list.map((c,i)=><button type="button" role="option" id={`command-${c.id}`} key={c.id} aria-selected={active?.id===c.id} disabled={c.disabled} tabIndex={-1} onPointerMove={()=>setIndex(i)} onClick={()=>onChoose(c)}><span><strong>{c.label}</strong><small>{c.description}</small></span><ArrowUpRight size={17}/></button>)}</div>{!list.length&&<p className="command-empty" role="status">没有匹配功能，试试“设置”或“Agent”。</p>}<p className="command-help">↑ ↓ 选择 · Enter 打开 · Esc 返回</p></Modal>;
+}

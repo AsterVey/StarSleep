@@ -1,25 +1,30 @@
+import type {IntegrationApi} from './integration-types';
+import type {ToolboxApi} from './toolbox-types';
+import type {WorkshopApi} from './workshop-types';
 export type Kind = 'shutdown' | 'alarm';
 export type Repeat = 'once' | 'daily' | 'weekly';
-export interface PlanInput { name: string; kind: Kind; repeat: Repeat; date: string; time: string; weekdays: number[]; enabled: boolean }
+export interface PlanInput { name: string; kind: Kind; repeat: Repeat; date: string; time: string; weekdays: number[]; enabled: boolean; notes?: string }
 export interface Plan extends PlanInput { id: string; revision: number; createdAt: number; outcome?: string; exactAt?: number }
-export interface QuickInput { kind: Kind; minutes: number; name?: string }
+export interface QuickInput { kind: Kind; minutes: number; name?: string; notes?: string }
+export type PauseInput = {minutes:number;until?:never} | {until:number;minutes?:never};
 export type WindowMode = 'full' | 'mini';
-export type PresetInput = { type: 'schedule'; name: string; kind: Kind; repeat: Repeat; time: string; weekdays: number[] } | { type: 'quick'; name: string; kind: Kind; minutes: number };
+export type PresetInput = ({ type: 'schedule'; name: string; kind: Kind; repeat: Repeat; time: string; weekdays: number[] } | { type: 'quick'; name: string; kind: Kind; minutes: number }) & {notes?:string};
 export type Preset = PresetInput & { id: string };
-export interface ExperiencePrefs { interaction: boolean; miniPinned: boolean }
+export type SpaceNode='control'|'agent'|'workshop'|'system';
+export interface ExperiencePrefs { interaction: boolean; miniPinned: boolean; startupAnimation?:boolean; sceneMode?:'immersive'|'classic'; motionQuality?:'adaptive'|'low'|'static'; cameraZoom?:number; panels?:Partial<Record<SpaceNode,{width:number;height:number}>> }
 export interface ExperienceSnapshot { presets: Preset[]; prefs: ExperiencePrefs; mode: WindowMode; error?: string; notice?: string }
 export interface AgendaDay { date: string; occurrences: Occurrence[] }
 export interface Agenda { days: AgendaDay[]; generatedAt: number }
 export interface PlanDefinition extends PlanInput { exactAt?: number }
 export interface ImportPreview { token: string; total: number; imported: number; duplicate: number; expired: number; names: string[]; skipped: {name: string; reason: string}[] }
-export interface Occurrence { key: string; planId: string; name: string; kind: Kind; at: number; originalAt: number; demo?: boolean; endsAt?: number }
+export interface Occurrence { key: string; planId: string; name: string; kind: Kind; at: number; originalAt: number; demo?: boolean; endsAt?: number; notes?: string }
 export interface LogEntry { at: number; text: string; level: 'info' | 'error' }
 export interface Settings { sound: boolean; volume: number; reducedMotion: boolean; warningMinutes?: number; alarmSeconds?: number }
 export interface LogFilter { query: string; date: string; errorsOnly: boolean }
-export interface RuntimeState { warnings: Occurrence[]; alarms: Occurrence[]; settings: Settings; now: number; paused: boolean; storageError?: string }
-export interface StoreData { version: 2; paused: boolean; plans: Plan[]; handled: Record<string, number>; overrides: Record<string, number>; logs: LogEntry[]; settings: Settings }
-export interface Snapshot { plans: (Plan & { nextAt: number | null; status: string })[]; warnings: Occurrence[]; alarms: Occurrence[]; logs: LogEntry[]; settings: Settings; now: number; safeMode: boolean; paused: boolean; storageError?: string }
-export interface Api {
+export interface RuntimeState { warnings: Occurrence[]; alarms: Occurrence[]; settings: Settings; now: number; paused: boolean; pauseUntil?:number; storageError?: string }
+export interface StoreData { version: 2; paused: boolean; pauseUntil?:number; plans: Plan[]; handled: Record<string, number>; overrides: Record<string, number>; logs: LogEntry[]; settings: Settings }
+export interface Snapshot { plans: (Plan & { nextAt: number | null; status: string })[]; warnings: Occurrence[]; alarms: Occurrence[]; logs: LogEntry[]; settings: Settings; now: number; safeMode: boolean; paused: boolean; pauseUntil?:number; storageError?: string }
+export interface Api extends IntegrationApi,ToolboxApi,WorkshopApi {
   experience(): Promise<ExperienceSnapshot>;
   savePreset(value: PresetInput, id?: string): Promise<ExperienceSnapshot>;
   removePreset(id: string): Promise<ExperienceSnapshot>;
@@ -42,6 +47,7 @@ export interface Api {
   demo(kind: Kind): Promise<Snapshot>;
   quick(input: QuickInput): Promise<Snapshot>;
   pause(paused: boolean): Promise<Snapshot>;
+  pauseFor(input:PauseInput):Promise<Snapshot>;
   exportPlans(): Promise<boolean>;
   exportLogs(filter: LogFilter): Promise<boolean>;
   previewImport(): Promise<ImportPreview | null>;
